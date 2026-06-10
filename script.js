@@ -187,6 +187,9 @@ function renderBlackjack() {
       `;
 
       document.getElementById('bjHit').addEventListener('click', () => {
+        const hitButton = document.getElementById('bjHit');
+        hitButton.classList.add('spin-pill');
+        setTimeout(() => hitButton.classList.remove('spin-pill'), 220);
         player.push(draw(deck));
         const scoreNow = score(player);
         if (scoreNow > 21) {
@@ -199,6 +202,9 @@ function renderBlackjack() {
       });
 
       document.getElementById('bjStand').addEventListener('click', () => {
+        const standButton = document.getElementById('bjStand');
+        standButton.classList.add('spin-pill');
+        setTimeout(() => standButton.classList.remove('spin-pill'), 220);
         while (score(dealer) < 17) dealer.push(draw(deck));
         finish();
       });
@@ -453,6 +459,10 @@ function showResult(elementId, text, tone) {
   if (!box) return;
   box.textContent = text;
   box.className = `result-box ${tone}`;
+  box.animate([
+    { transform: 'translateY(2px)', opacity: 0.75 },
+    { transform: 'translateY(0)', opacity: 1 },
+  ], { duration: 180, easing: 'ease-out' });
 }
 
 function createDeck() {
