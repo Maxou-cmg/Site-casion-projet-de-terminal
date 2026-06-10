@@ -87,43 +87,45 @@ function renderBlackjack() {
     const deck = createDeck();
     const player = [draw(deck), draw(deck)];
     const dealer = [draw(deck), draw(deck)];
-    let playerScore = score(player);
 
-    function reveal() {
+    const finish = () => {
       const dealerScore = score(dealer);
-      const playerFinal = score(player);
-      let resultText = '';
-      let kind = 'info';
-      if (dealerScore > 21 || playerFinal > dealerScore) {
-        state.balance += bet * 2;
-        resultText = `Vous gagnez ${bet} jetons ! Score final : ${playerFinal} contre ${dealerScore}.`;
-        kind = 'success';
-      } else if (playerFinal === dealerScore) {
-        state.balance += bet;
-        resultText = `Égalité, votre mise est remboursée (${bet} jetons).`;
-        kind = 'info';
-      } else {
-        resultText = `Le croupier gagne. Vous perdez ${bet} jetons.`;
-        kind = 'error';
-      }
-      showResult('bjResult', `${resultText} Solde actuel : ${formatMoney(state.balance)}.`, kind);
-      addHistory(`Blackjack : ${resultText}`);
-      updateBalance();
-    }
+      const playerScore = score(player);
+      let message = '';
+      let tone = 'info';
 
-    const drawDealer = () => {
-      while (score(dealer) < 17) dealer.push(draw(deck));
-      reveal();
+      if (playerScore === 21 && player.length === 2 && dealerScore !== 21) {
+        state.balance += Math.floor(bet * 2.5);
+        message = `Blackjack ! Vous gagnez ${Math.floor(bet * 1.5)} jetons bonus (${bet} + ${Math.floor(bet * 1.5)}).`;
+        tone = 'success';
+      } else if (dealerScore > 21 || playerScore > dealerScore) {
+        state.balance += bet * 2;
+        message = `Vous gagnez ${bet} jetons. Score final : ${playerScore} contre ${dealerScore}.`;
+        tone = 'success';
+      } else if (playerScore === dealerScore) {
+        state.balance += bet;
+        message = `Égalité, votre mise de ${bet} jetons est remboursée.`;
+        tone = 'info';
+      } else {
+        message = `Le croupier gagne. Vous perdez ${bet} jetons.`;
+        tone = 'error';
+      }
+
+      showResult('bjResult', `${message} Solde : ${formatMoney(state.balance)}.`, tone);
+      addHistory(`Blackjack : ${message}`);
+      updateBalance();
     };
 
     const render = () => {
-      const playerScoreNow = score(player);
-      const dealerVisible = dealer.length > 1 ? [dealer[0], '?'] : dealer;
+      const dealerVisible = dealer.map((card, index) => (index === 1 ? '?' : card));
+      const playerScore = score(player);
+      const dealerScore = score(dealer.slice(0, 1));
+
       gameArea.innerHTML = `
         <article class="game-box">
           <h3>Blackjack en cours</h3>
           <p class="muted">Mise : ${bet} jetons</p>
-          <div class="badge-row"><span>Vous : ${playerScoreNow}</span><span>Croupier : ${score([dealer[0]])}</span></div>
+          <div class="badge-row"><span>Vous : ${playerScore}</span><span>Croupier visible : ${dealerScore}</span></div>
           <p><strong>Vos cartes</strong>${renderCardHand(player)}</p>
           <p><strong>Cartes du croupier</strong>${renderCardHand(dealerVisible)}</p>
           <div class="inline-actions">
@@ -136,9 +138,10 @@ function renderBlackjack() {
 
       document.getElementById('bjHit').addEventListener('click', () => {
         player.push(draw(deck));
-        if (score(player) > 21) {
+        const scoreNow = score(player);
+        if (scoreNow > 21) {
           showResult('bjStatus', `Vous dépassez 21. Vous perdez ${bet} jetons.`, 'error');
-          addHistory(`Blackjack : Vous dépassez 21, perte de ${bet} jetons.`);
+          addHistory(`Blackjack : vous dépassez 21, perte de ${bet} jetons.`);
           updateBalance();
           return;
         }
@@ -146,15 +149,21 @@ function renderBlackjack() {
       });
 
       document.getElementById('bjStand').addEventListener('click', () => {
-        drawDealer();
+        while (score(dealer) < 17) dealer.push(draw(deck));
+        finish();
       });
     };
+
+    if (score(player) === 21) {
+      finish();
+      return;
+    }
 
     render();
   });
 
   document.getElementById('bjRules').addEventListener('click', () => {
-    showResult('bjResult', 'Règle : la main la plus proche de 21 gagne. Le croupier joue à partir de 17.', 'info');
+    showResult('bjResult', 'Règle : le croupier tire jusqu’à 17. Un blackjack naturel gagne avec un bonus de 1,5 fois la mise.', 'info');
   });
 }
 
@@ -162,10 +171,15 @@ function renderRoulette() {
   gameArea.innerHTML = `
     <article class="game-box">
       <h3>Roulette</h3>
-      <p class="muted">Choisissez un numéro entre 0 et 36 ou pariez sur couleur / parité.</p>
+      <p class="muted">Choisissez un numéro (0–36), la couleur, la parité ou les moitiés de la roue.</p>
       <div class="form-row">
         <div class="field"><label for="rouletteType">Type de pari</label>
-          <select id="rouletteType"><option value="num">Numéro</option><option value="color">Couleur</option><option value="pair">Pair / impair</option></select>
+          <select id="rouletteType">
+            <option value="numero">Numéro plein</option>
+            <option value="couleur">Rouge / Noir</option>
+            <option value="parite">Pair / Impair</option>
+            <option value="moitie">1–18 / 19–36</option>
+          </select>
         </div>
         <div class="field"><label for="rouletteValue">Valeur</label><input id="rouletteValue" type="text" value="17" /></div>
         <div class="field"><label for="rouletteBet">Mise</label><input id="rouletteBet" type="number" min="10" value="40" /></div>
@@ -185,24 +199,44 @@ function renderRoulette() {
     const type = document.getElementById('rouletteType').value;
     const value = document.getElementById('rouletteValue').value.trim().toUpperCase();
     const result = Math.floor(Math.random() * 37);
-    const color = result === 0 ? 'vert' : (result % 2 === 0 ? 'rouge' : 'noir');
-    let win = false;
+    const isRed = result !== 0 && [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].includes(result);
+    const color = result === 0 ? 'vert' : (isRed ? 'rouge' : 'noir');
+    const parity = result % 2 === 0 ? 'pair' : 'impair';
+    const half = result >= 19 ? '19-36' : result === 0 ? '0' : '1-18';
 
-    if (type === 'num') {
-      win = Number(value) === result;
-    } else if (type === 'color') {
-      win = (value === 'R' && color === 'rouge') || (value === 'N' && color === 'noir') || (value === 'V' && color === 'vert');
+    let win = false;
+    let gain = 0;
+    let detail = '';
+
+    if (type === 'numero') {
+      const picked = Number(value);
+      win = picked === result;
+      gain = win ? bet * 35 : 0;
+      detail = `numéro ${picked}`;
+    } else if (type === 'couleur') {
+      const choice = value || 'R';
+      win = (choice === 'R' && color === 'rouge') || (choice === 'N' && color === 'noir') || (choice === 'V' && color === 'vert');
+      gain = win ? bet * 2 : 0;
+      detail = `couleur ${choice}`;
+    } else if (type === 'parite') {
+      const choice = value || 'P';
+      win = (choice === 'P' && parity === 'pair') || (choice === 'I' && parity === 'impair');
+      gain = win ? bet * 2 : 0;
+      detail = `parité ${choice}`;
     } else {
-      win = (value === 'P' && result % 2 === 0) || (value === 'I' && result % 2 !== 0);
+      const choice = value || 'B';
+      win = (choice === 'B' && half === '1-18') || (choice === 'H' && half === '19-36');
+      gain = win ? bet * 2 : 0;
+      detail = `moitié ${choice}`;
     }
 
     state.balance -= bet;
     if (win) {
-      state.balance += bet * 2;
-      showResult('rouletteResult', `Résultat : ${result} (${color}). Vous gagnez ${bet} jetons !`, 'success');
-      addHistory(`Roulette : ${result} (${color}) — gain de ${bet} jetons.`);
+      state.balance += bet + gain;
+      showResult('rouletteResult', `Résultat : ${result} (${color}, ${parity}, ${half}). Vous gagnez ${gain} jetons sur le pari ${detail}.`, 'success');
+      addHistory(`Roulette : ${result} (${color}) — gain de ${gain} jetons.`);
     } else {
-      showResult('rouletteResult', `Résultat : ${result} (${color}). Vous perdez ${bet} jetons.`, 'error');
+      showResult('rouletteResult', `Résultat : ${result} (${color}, ${parity}, ${half}). Vous perdez ${bet} jetons.`, 'error');
       addHistory(`Roulette : ${result} (${color}) — perte de ${bet} jetons.`);
     }
     updateBalance();
@@ -213,12 +247,19 @@ function renderCraps() {
   gameArea.innerHTML = `
     <article class="game-box">
       <h3>Craps</h3>
-      <p class="muted">Lancez les dés. Si vous obtenez 7 ou 11, vous gagnez ; sinon, continuez jusqu’au point.</p>
+      <p class="muted">Choisissez un type de pari : Pass Line, Don't Pass ou Any Seven.</p>
       <div class="form-row">
+        <div class="field"><label for="crapsType">Pari</label>
+          <select id="crapsType">
+            <option value="pass">Pass Line</option>
+            <option value="dontpass">Don't Pass</option>
+            <option value="any7">Any Seven</option>
+          </select>
+        </div>
         <div class="field"><label for="crapsBet">Mise</label><input id="crapsBet" type="number" min="10" value="30" /></div>
         <div class="inline-actions"><button class="button button-primary" id="crapsStart">Lancer les dés</button></div>
       </div>
-      <div id="crapsResult" class="result-box info">Cliquez pour lancer les dés.</div>
+      <div id="crapsResult" class="result-box info">Choisissez votre pari puis lancez les dés.</div>
     </article>
   `;
 
@@ -228,18 +269,57 @@ function renderCraps() {
       showResult('crapsResult', 'Mise invalide : minimum 10 jetons.', 'error');
       return;
     }
+
+    const type = document.getElementById('crapsType').value;
     const d1 = Math.floor(Math.random() * 6) + 1;
     const d2 = Math.floor(Math.random() * 6) + 1;
     const total = d1 + d2;
+
     state.balance -= bet;
-    if (total === 7 || total === 11) {
-      state.balance += bet * 2;
-      showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Vous gagnez ${bet} jetons !`, 'success');
-      addHistory(`Craps : ${total} — gain de ${bet} jetons.`);
-    } else {
-      showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Vous perdez ${bet} jetons.`, 'error');
-      addHistory(`Craps : ${total} — perte de ${bet} jetons.`);
+
+    if (type === 'any7') {
+      if (total === 7) {
+        state.balance += bet + bet * 4;
+        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Any Seven ! Vous gagnez ${bet * 4} jetons bonus.`, 'success');
+        addHistory(`Craps : Any Seven — gain de ${bet * 4} jetons.`);
+      } else {
+        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Pas de 7, vous perdez ${bet} jetons.`, 'error');
+        addHistory(`Craps : Any Seven — perte de ${bet} jetons.`);
+      }
+      updateBalance();
+      return;
     }
+
+    if (type === 'pass') {
+      if (total === 7 || total === 11) {
+        state.balance += bet * 2;
+        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Pass Line gagnant : +${bet} jetons.`, 'success');
+        addHistory(`Craps : Pass Line — gain de ${bet} jetons.`);
+      } else if (total === 2 || total === 3 || total === 12) {
+        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Craps, vous perdez ${bet} jetons.`, 'error');
+        addHistory(`Craps : Pass Line — perte de ${bet} jetons.`);
+      } else {
+        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Point établi : continuez jusqu'à obtenir ${total} avant un 7.`, 'info');
+        addHistory(`Craps : point ${total} établi.`);
+      }
+    } else {
+      if (total === 2 || total === 3) {
+        state.balance += bet * 2;
+        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Don't Pass gagnant : +${bet} jetons.`, 'success');
+        addHistory(`Craps : Don't Pass — gain de ${bet} jetons.`);
+      } else if (total === 12) {
+        state.balance += bet;
+        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Bar 12, mise remboursée.`, 'info');
+        addHistory(`Craps : Don't Pass — mise remboursée.`);
+      } else if (total === 7 || total === 11) {
+        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Don't Pass perdu : -${bet} jetons.`, 'error');
+        addHistory(`Craps : Don't Pass — perte de ${bet} jetons.`);
+      } else {
+        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Le point est ${total}, continuez jusqu'à obtenir un 7.`, 'info');
+        addHistory(`Craps : point ${total} établi.`);
+      }
+    }
+
     updateBalance();
   });
 }
@@ -263,21 +343,25 @@ function renderSlots() {
       showResult('slotsResult', 'Mise invalide : minimum 10 jetons.', 'error');
       return;
     }
-    const symbols = ['🍒', '🍋', '🍊', '⭐', '7'];
+
+    const symbols = ['🍒', '🍋', '🍊', '🍇', '⭐', '7'];
     const r1 = symbols[Math.floor(Math.random() * symbols.length)];
     const r2 = symbols[Math.floor(Math.random() * symbols.length)];
     const r3 = symbols[Math.floor(Math.random() * symbols.length)];
+    const payout = { '🍒': 2, '🍋': 3, '🍊': 4, '🍇': 5, '⭐': 8, '7': 10 };
 
     state.balance -= bet;
     if (r1 === r2 && r2 === r3) {
-      const coeff = { '🍒': 2, '🍋': 3, '🍊': 4, '⭐': 6, '7': 10 }[r1] || 1;
-      state.balance += bet * coeff;
-      showResult('slotsResult', `Jackpot ! ${r1} ${r2} ${r3} — vous gagnez ${bet * coeff} jetons.`, 'success');
-      addHistory(`Slots : jackpot ${r1}${r2}${r3} (+${bet * coeff}).`);
+      const coeff = payout[r1] || 1;
+      const gain = bet * coeff;
+      state.balance += bet + gain;
+      showResult('slotsResult', `Jackpot ! ${r1} ${r2} ${r3} — vous remportez ${gain} jetons (×${coeff}).`, 'success');
+      addHistory(`Slots : jackpot ${r1}${r2}${r3} (+${gain}).`);
     } else if (r1 === r2 || r2 === r3 || r1 === r3) {
-      state.balance += Math.floor(bet * 1.5);
-      showResult('slotsResult', `Deux symboles identiques : ${r1} ${r2} ${r3}. Vous gagnez ${Math.floor(bet * 1.5)} jetons.`, 'info');
-      addHistory(`Slots : 2 identiques ${r1}${r2}${r3} (+${Math.floor(bet * 1.5)}).`);
+      const gain = Math.floor(bet * 1.5);
+      state.balance += bet + gain;
+      showResult('slotsResult', `Deux symboles identiques : ${r1} ${r2} ${r3}. Vous gagnez ${gain} jetons.`, 'info');
+      addHistory(`Slots : 2 identiques ${r1}${r2}${r3} (+${gain}).`);
     } else {
       showResult('slotsResult', `Aucun alignement : ${r1} ${r2} ${r3}. Vous perdez ${bet} jetons.`, 'error');
       addHistory(`Slots : échec ${r1}${r2}${r3} (-${bet}).`);
