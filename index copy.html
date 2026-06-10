@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Casino</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap');
+
+:root {
+  --bg:       #06060f;
+  --bg2:      #0d0d1e;
+  --bg3:      #12122a;
+  --purple:   #7c3aed;
+  --purple2:  #a78bfa;
+  --gold:     #f59e0b;
+  --gold2:    #fde68a;
+  --green:    #10b981;
+  --green2:   #6ee7b7;
+  --red:      #ef4444;
+  --red2:     #fca5a5;
+  --cyan:     #06b6d4;
+  --pink:     #ec4899;
+  --text:     #e2e8f0;
+  --muted:    #64748b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #0d0d1e 0%, #1a0a3a 100%);
+  border-bottom: 1px solid rgba(124,58,237,0.3);
+  padding: 16px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(10px);
+}
+.logo {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px; font-weight: 900;
+  background: linear-gradient(135deg, var(--purple2), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: 3px;
+  text-shadow: none;
+  filter: drop-shadow(0 0 12px rgba(167,139,250,0.5));
+}
+.balance {
+  background: linear-gradient(135deg, #1a0a2a, #2a1a0a);
+  border: 1px solid var(--gold);
+  border-radius: 10px; padding: 8px 20px;
+  font-family: 'Orbitron', monospace;
+  font-size: 14px; color: var(--gold2);
+  box-shadow: 0 0 15px rgba(245,158,11,0.2);
+}
+
+/* NAV */
+.nav {
+  background: var(--bg2);
+  border-bottom: 1px solid rgba(124,58,237,0.2);
+  display: flex; gap: 4px; padding: 10px 20px; flex-wrap: wrap;
+}
+.nav-btn {
+  padding: 10px 18px; border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent; color: var(--muted);
+  cursor: pointer; font-family: 'Rajdhani', sans-serif;
+  font-size: 14px; font-weight: 700; letter-spacing: 1px;
+  transition: all 0.25s;
+}
+.nav-btn:hover { background: rgba(124,58,237,0.15); color: var(--purple2); border-color: rgba(124,58,237,0.3); }
+.nav-btn.active { background: rgba(124,58,237,0.25); border-color: var(--purple); color: var(--purple2); box-shadow: 0 0 12px rgba(124,58,237,0.3); }
+
+.game-area { padding: 28px 20px; max-width: 800px; margin: 0 auto; }
+
+/* SHARED */
+.game-panel {
+  background: var(--bg2);
+  border: 1px solid rgba(124,58,237,0.25);
+  border-radius: 20px; padding: 28px;
+}
+.panel-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 18px; font-weight: 700;
+  color: var(--purple2); text-align: center;
+  letter-spacing: 3px; margin-bottom: 24px;
+  text-shadow: 0 0 15px rgba(167,139,250,0.5);
+}
+.chips-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.chip {
+  width: 52px; height: 52px; border-radius: 50%;
+  border: 3px dashed; display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 13px; cursor: pointer;
+  transition: all 0.2s; position: relative; user-select: none;
+}
+.chip::before {
+  content: ''; position: absolute; inset: 3px;
+  border-radius: 50%; border: 1px solid currentColor; opacity: 0.3;
+}
+.chip:hover { transform: scale(1.15) rotate(5deg); filter: brightness(1.3); }
+.chip.c10  { background: #1a1a4a; border-color: #6060ef; color: #a0a0ff; }
+.chip.c25  { background: #0a3a1a; border-color: #20a040; color: #60ef80; }
+.chip.c50  { background: #3a0a0a; border-color: #c02020; color: #ef6060; }
+.chip.c100 { background: #3a2a00; border-color: #c08000; color: #ffc020; }
+.bet-label { color: var(--gold); font-size: 15px; font-weight: 700; margin-left: 6px; }
+.btn {
+  padding: 12px 24px; border-radius: 10px; border: 1px solid;
+  cursor: pointer; font-family: 'Rajdhani', sans-serif;
+  font-size: 15px; font-weight: 700; letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
+.btn:active { transform: translateY(0); }
+.btn-purple { background: rgba(124,58,237,0.2); border-color: var(--purple); color: var(--purple2); box-shadow: 0 0 10px rgba(124,58,237,0.2); }
+.btn-green  { background: rgba(16,185,129,0.15); border-color: var(--green); color: var(--green2); }
+.btn-red    { background: rgba(239,68,68,0.15); border-color: var(--red); color: var(--red2); }
+.btn-gray   { background: rgba(100,116,139,0.15); border-color: var(--muted); color: #94a3b8; }
+.btn-gold   { background: rgba(245,158,11,0.15); border-color: var(--gold); color: var(--gold2); }
+.btns-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.result-box {
+  text-align: center; font-size: 20px; font-weight: 700;
+  padding: 16px; border-radius: 12px; margin-top: 18px;
+  display: none; font-family: 'Orbitron', monospace; letter-spacing: 1px;
+}
+.res-win  { background: rgba(16,185,129,0.1); border: 1px solid var(--green); color: var(--green2); display: block; animation: glow-green 0.5s ease; }
+.res-lose { background: rgba(239,68,68,0.1); border: 1px solid var(--red); color: var(--red2); display: block; }
+.res-push { background: rgba(245,158,11,0.1); border: 1px solid var(--gold); color: var(--gold2); display: block; }
+@keyframes glow-green { 0%{box-shadow:0 0 0 rgba(16,185,129,0)} 50%{box-shadow:0 0 30px rgba(16,185,129,0.5)} 100%{box-shadow:0 0 10px rgba(16,185,129,0.2)} }
+.divider { border-top: 1px solid rgba(124,58,237,0.2); margin: 18px 0; }
+.section-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+
+/* CARDS */
+.cards-area { display: flex; gap: 10px; flex-wrap: wrap; min-height: 100px; margin-bottom: 10px; }
+.playing-card {
+  width: 65px; height: 95px; border-radius: 10px;
+  background: #fff; border: 2px solid #e2e8f0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900; color: #111;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  animation: card-deal 0.3s ease;
+  flex-shrink: 0;
+}
+@keyframes card-deal { from{transform:translateY(-20px) rotate(-5deg);opacity:0} to{transform:none;opacity:1} }
+.playing-card.red-card { color: #dc2626; }
+.playing-card.card-back {
+  background: linear-gradient(135deg, #2a0a5a, #1a0a3a);
+  border-color: var(--purple); color: transparent;
+  background-image: repeating-linear-gradient(45deg, rgba(124,58,237,0.1) 0px, rgba(124,58,237,0.1) 2px, transparent 2px, transparent 8px);
+}
+.score-pill {
+  display: inline-block;
+  background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.4);
+  color: var(--purple2); border-radius: 20px;
+  padding: 4px 16px; font-size: 14px; font-weight: 700; margin-bottom: 14px;
+}
+
+/* ======================== ROULETTE ======================== */
+.roulette-wrap {
+  display: flex; justify-content: center;
+  margin-bottom: 22px; position: relative;
+}
+#rouletteCanvas {
+  border-radius: 50%;
+  filter: drop-shadow(0 0 20px rgba(124,58,237,0.4));
+}
+.roulette-result {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  background: var(--bg); border: 3px solid var(--purple);
+  border-radius: 50%; width: 70px; height: 70px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Orbitron', monospace;
+  font-size: 20px; font-weight: 900; color: var(--purple2);
+  box-shadow: 0 0 20px rgba(124,58,237,0.4);
+  pointer-events: none;
+}
+.roul-outside { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.roul-out-btn {
+  padding: 8px 14px; border-radius: 7px;
+  border: 1px solid rgba(124,58,237,0.3);
+  background: var(--bg3); color: var(--muted);
+  cursor: pointer; font-size: 13px; font-weight: 700;
+  transition: all 0.2s; letter-spacing: 1px;
+}
+.roul-out-btn:hover, .roul-out-btn.sel { border-color: var(--purple); background: rgba(124,58,237,0.2); color: var(--purple2); }
+.roul-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 14px; }
+.roul-num {
+  padding: 8px 2px; border-radius: 5px; text-align: center;
+  cursor: pointer; font-size: 12px; font-weight: 700;
+  border: 1px solid rgba(100,116,139,0.3); color: var(--text);
+  transition: all 0.15s; user-select: none;
+}
+.roul-num:hover { border-color: var(--purple2); transform: scale(1.05); }
+.roul-num.sel { border-color: var(--purple2); background: rgba(124,58,237,0.3); color: #fff; }
+.roul-num.rr { background: rgba(220,38,38,0.3); border-color: rgba(220,38,38,0.5); }
+.roul-num.rb { background: rgba(30,30,60,0.5); }
+.roul-num.rg { background: rgba(16,185,129,0.3); border-color: rgba(16,185,129,0.5); color: var(--green2); }
+
+/* ======================== SLOTS ======================== */
+.slot-machine-body {
+  background: linear-gradient(180deg, #1a0a3a 0%, #0a0a1a 100%);
+  border: 3px solid var(--purple);
+  border-radius: 24px; padding: 24px;
+  box-shadow: 0 0 30px rgba(124,58,237,0.3), inset 0 0 30px rgba(0,0,0,0.5);
+  max-width: 420px; margin: 0 auto; text-align: center;
+}
+.slot-screen {
+  background: #000; border: 3px solid rgba(124,58,237,0.5);
+  border-radius: 16px; padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+  display: flex; gap: 10px; justify-content: center;
+}
+.slot-reel-window {
+  width: 90px; height: 90px;
+  overflow: hidden; position: relative;
+  background: #0a0a14; border-radius: 10px;
+  border: 1px solid rgba(124,58,237,0.4);
+}
+.slot-reel-strip {
+  display: flex; flex-direction: column;
+  transition: transform 0.1s;
+  position: absolute; width: 100%;
+}
+.slot-symbol {
+  height: 90px; display: flex; align-items: center; justify-content: center;
+  font-size: 48px; flex-shrink: 0;
+}
+.slot-lights {
+  display: flex; justify-content: space-around; margin-bottom: 14px;
+}
+.slot-light {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--muted); transition: all 0.3s;
+}
+.slot-light.on { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+.slot-win-line {
+  height: 3px; background: transparent;
+  border-radius: 2px; margin: -4px 0 8px;
+  transition: all 0.3s;
+}
+.slot-win-line.active { background: linear-gradient(90deg, transparent, var(--gold), transparent); box-shadow: 0 0 10px var(--gold); }
+.slot-paytable { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 18px; text-align: left; }
+.slot-pay-row { font-size: 13px; color: var(--muted); }
+.slot-pay-row span { color: var(--purple2); }
+
+/* ======================== CRAPS ======================== */
+.craps-table-felt {
+  background: radial-gradient(ellipse at center, #0d2a0d 0%, #071507 100%);
+  border: 3px solid rgba(16,185,129,0.3);
+  border-radius: 20px; padding: 24px;
+}
+.dice-container { display: flex; gap: 24px; justify-content: center; margin: 20px 0; }
+.die-3d {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, #f8f8f8, #e0e0e0);
+  border-radius: 14px;
+  border: 2px solid #ccc;
+  box-shadow: 4px 4px 12px rgba(0,0,0,0.6), inset -2px -2px 6px rgba(0,0,0,0.1);
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr; padding: 10px; gap: 4px;
+  transition: all 0.15s;
+}
+.die-3d.rolling { animation: die-roll 0.1s infinite; }
+@keyframes die-roll {
+  0%  { transform: rotate(0deg)   scale(1.05); }
+  25% { transform: rotate(90deg)  scale(0.95); }
+  50% { transform: rotate(180deg) scale(1.05); }
+  75% { transform: rotate(270deg) scale(0.95); }
+  100%{ transform: rotate(360deg) scale(1.05); }
+}
+.pip { border-radius: 50%; background: #1a0a0a; }
+.pip.off { background: transparent; }
+.craps-point-display {
+  background: rgba(16,185,129,0.1); border: 2px solid rgba(16,185,129,0.3);
+  border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 16px;
+}
+.craps-point-num { font-family: 'Orbitron', monospace; font-size: 36px; font-weight: 900; color: var(--gold); }
+.craps-point-lbl { font-size: 12px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+.craps-total-display {
+  text-align: center; font-family: 'Orbitron', monospace;
+  font-size: 28px; font-weight: 900; color: var(--gold2);
+  margin-bottom: 16px; min-height: 40px;
+}
+.craps-bets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.craps-bet-opt {
+  padding: 12px; border-radius: 10px;
+  border: 1px solid rgba(100,116,139,0.3);
+  background: rgba(13,13,30,0.5);
+  cursor: pointer; text-align: center; transition: all 0.2s;
+}
+.craps-bet-opt:hover { border-color: var(--purple2); background: rgba(124,58,237,0.15); }
+.craps-bet-opt.sel { border-color: var(--green); background: rgba(16,185,129,0.15); }
+.craps-bet-opt.dis { opacity: 0.35; pointer-events: none; }
+.craps-bet-name { font-weight: 700; color: var(--text); font-size: 14px; }
+.craps-bet-desc { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* ======================== KENO ======================== */
+.keno-panel { background: linear-gradient(135deg, #1a040a, #0a0412); border: 2px solid rgba(236,72,153,0.3); border-radius: 20px; padding: 24px; }
+.keno-grid { display: grid; grid-template-columns: repeat(10,1fr); gap: 5px; margin-bottom: 16px; }
+.keno-ball {
+  aspect-ratio: 1; border-radius: 50%;
+  border: 2px solid rgba(236,72,153,0.3);
+  background: rgba(30,4,20,0.8);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #c080a0;
+  cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.keno-ball:hover { border-color: var(--pink); transform: scale(1.1); }
+.keno-ball.sel { border-color: var(--pink); background: rgba(236,72,153,0.25); color: #fbbfda; box-shadow: 0 0 8px rgba(236,72,153,0.3); }
+.keno-ball.drawn { border-color: var(--gold); background: rgba(245,158,11,0.2); color: var(--gold2); animation: keno-pop 0.3s ease; }
+.keno-ball.hit { border-color: var(--green); background: rgba(16,185,129,0.25); color: var(--green2); box-shadow: 0 0 10px rgba(16,185,129,0.4); animation: keno-pop 0.3s ease; }
+@keyframes keno-pop { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+.keno-payouts { display: grid; grid-template-columns: repeat(6,1fr); gap: 6px; margin-bottom: 16px; }
+.keno-pay-cell { text-align: center; background: rgba(236,72,153,0.08); border-radius: 6px; padding: 6px 2px; }
+.keno-pay-hits { font-size: 12px; color: var(--pink); font-weight: 700; }
+.keno-pay-mult { font-size: 12px; color: var(--gold); }
+
+/* ======================== BACCARAT ======================== */
+.bacc-felt {
+  background: radial-gradient(ellipse, #061a0c 0%, #020a04 100%);
+  border: 2px solid rgba(16,185,129,0.3);
+  border-radius: 20px; padding: 24px;
+}
+.bacc-bets-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+.bacc-bet-card {
+  flex: 1; min-width: 120px; max-width: 160px;
+  padding: 16px 12px; border-radius: 14px;
+  border: 2px solid rgba(16,185,129,0.2);
+  background: rgba(16,185,129,0.05);
+  cursor: pointer; text-align: center; transition: all 0.25s;
+}
+.bacc-bet-card:hover { border-color: var(--green); background: rgba(16,185,129,0.12); transform: translateY(-2px); }
+.bacc-bet-card.sel { border-color: var(--green2); background: rgba(16,185,129,0.2); box-shadow: 0 0 15px rgba(16,185,129,0.3); }
+.bacc-bet-name { font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700; color: var(--green2); margin-bottom: 4px; }
+.bacc-bet-odds { font-size: 12px; color: var(--muted); }
+.bacc-hands { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+.bacc-hand-box { background: rgba(0,0,0,0.3); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 14px; text-align: center; }
+.bacc-hand-lbl { font-size: 11px; color: var(--green); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+.bacc-hand-score { font-family: 'Orbitron', monospace; font-size: 32px; font-weight: 900; color: var(--green2); margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">✦ NEON CASINO ✦</div>
+  <div class="balance">💰 <span id="bal">5 000</span> jetons</div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="go('bj')">🃏 Blackjack</button>
+  <button class="nav-btn" onclick="go('roulette')">🎡 Roulette</button>
+  <button class="nav-btn" onclick="go('slot')">🎰 Slots</button>
+  <button class="nav-btn" onclick="go('craps')">🎲 Craps</button>
+  <button class="nav-btn" onclick="go('keno')">🔢 Keno</button>
+  <button class="nav-btn" onclick="go('baccarat')">🎴 Baccarat</button>
+</div>
+
+<div class="game-area" id="gameArea"></div>
+
+<script>
+/* ─── GLOBAL ─── */
+var balance = 5000;
+function setBal(v){ balance=v; document.getElementById('bal').textContent=balance.toLocaleString('fr'); }
+function addBal(v){ setBal(balance+v); }
+function go(g){
+  document.querySelectorAll('.nav-btn').forEach(function(b,i){
+    b.classList.toggle('active',['bj','roulette','slot','craps','keno','baccarat'][i]===g);
+  });
+  var a=document.getElementById('gameArea');
+  if(g==='bj')       { a.innerHTML=bjHTML();       initBJ(); }
+  if(g==='roulette') { a.innerHTML=roulHTML();      initRoul(); }
+  if(g==='slot')     { a.innerHTML=slotHTML();      initSlot(); }
+  if(g==='craps')    { a.innerHTML=crapsHTML();     initCraps(); }
+  if(g==='keno')     { a.innerHTML=kenoHTML(); }
+  if(g==='baccarat') { a.innerHTML=baccHTML();      initBacc(); }
+}
+
+/* ─── DECK ─── */
+var SUITS=['♠','♥','♦','♣'], RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+function newDeck(){
+  var d=[];
+  SUITS.forEach(function(s){RANKS.forEach(function(r){d.push({r:r,s:s});});});
+  for(var i=d.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=d[i];d[i]=d[j];d[j]=t;}
+  return d;
+}
+function rVal(c){if(c.r==='A')return 11;if('JQK'.includes(c.r))return 10;return parseInt(c.r);}
+function hScore(h){var s=0,a=0;h.forEach(function(c){s+=rVal(c);if(c.r==='A')a++;});while(s>21&&a>0){s-=10;a--;}return s;}
+function cardEl(c,back){
+  var d=document.createElement('div');
+  if(back){d.className='playing-card card-back';return d;}
+  d.className='playing-card'+(['♥','♦'].includes(c.s)?' red-card':'');
+  d.textContent=c.r+c.s; return d;
+}
+
+/* ═══════════════════════════════════════
+   BLACKJACK
+═══════════════════════════════════════ */
+var bj={};
+function bjHTML(){
+  return '<div class="game-panel">'+
+    '<div class="panel-title">🃏 BLACKJACK</div>'+
+    '<div class="section-lbl">Croupier</div>'+
+    '<div class="cards-area" id="bjDC"></div>'+
+    '<div class="score-pill" id="bjDS">Score : ?</div>'+
+    '<div class="divider"></div>'+
+    '<div class="section-lbl">Vous</div>'+
+    '<div class="cards-area" id="bjPC"></div>'+
+    '<div class="score-pill" id="bjPS">Score : 0</div>'+
+    '<div class="chips-row">'+
+      '<div class="chip c10" onclick="bjBet(10)">10</div>'+
+      '<div class="chip c25" onclick="bjBet(25)">25</div>'+
+      '<div class="chip c50" onclick="bjBet(50)">50</div>'+
+      '<div class="chip c100" onclick="bjBet(100)">100</div>'+
+      '<span class="bet-label">Mise : <span id="bjM">0</span></span>'+
+    '</div>'+
+    '<div class="btns-row">'+
+      '<button class="btn btn-green" id="bjDeal" onclick="bjDeal()">Distribuer</button>'+
+      '<button class="btn btn-purple" id="bjHit" onclick="bjHit()" style="display:none">Tirer</button>'+
+      '<button class="btn btn-red" id="bjStand" onclick="bjStand()" style="display:none">Rester</button>'+
+      '<button class="btn btn-gray" id="bjNew" onclick="bjNew()" style="display:none">Nouveau</button>'+
+    '</div>'+
+    '<div class="result-box" id="bjRes"></div>'+
+  '</div>';
+}
+function initBJ(){ bj={deck:newDeck(),p:[],d:[],bet:0,phase:'bet'}; }
+function bjBet(n){ if(bj.phase!=='bet')return; if(n>balance)return; bj.bet+=n; addBal(-n); document.getElementById('bjM').textContent=bj.bet; }
+function bjDeal(){
+  if(bj.bet===0)return alert('Misez d\'abord !');
+  bj.phase='play';
+  bj.p=[bj.deck.pop(),bj.deck.pop()]; bj.d=[bj.deck.pop(),bj.deck.pop()];
+  bjRender(true);
+  document.getElementById('bjDeal').style.display='none';
+  document.getElementById('bjHit').style.display='';
+  document.getElementById('bjStand').style.display='';
+  if(hScore(bj.p)===21) bjStand();
+}
+function bjHit(){ bj.p.push(bj.deck.pop()); bjRender(true); if(hScore(bj.p)>21) bjEnd('bust'); }
+function bjStand(){ bjRender(false); while(hScore(bj.d)<17) bj.d.push(bj.deck.pop()); bjRender(false); var p=hScore(bj.p),d=hScore(bj.d); if(d>21||p>d) bjEnd('win'); else if(p===d) bjEnd('push'); else bjEnd('lose'); }
+function bjRender(hide){
+  var dc=document.getElementById('bjDC'), pc=document.getElementById('bjPC');
+  dc.innerHTML=''; bj.d.forEach(function(c,i){ dc.appendChild(cardEl(c,hide&&i===1)); });
+  pc.innerHTML=''; bj.p.forEach(function(c){ pc.appendChild(cardEl(c)); });
+  document.getElementById('bjPS').textContent='Score : '+hScore(bj.p);
+  document.getElementById('bjDS').textContent=hide?'Score : ?':'Score : '+hScore(bj.d);
+}
+function bjEnd(r){
+  bj.phase='done';
+  document.getElementById('bjHit').style.display='none';
+  document.getElementById('bjStand').style.display='none';
+  document.getElementById('bjNew').style.display='';
+  var el=document.getElementById('bjRes'); el.className='result-box';
+  if(r==='win'){ addBal(bj.bet*2); el.textContent='🏆 GAGNÉ ! +'+bj.bet+' jetons'; el.classList.add('res-win'); }
+  else if(r==='bust'){ el.textContent='💥 BUST ! -'+bj.bet+' jetons'; el.classList.add('res-lose'); }
+  else if(r==='lose'){ el.textContent='😞 PERDU ! -'+bj.bet+' jetons'; el.classList.add('res-lose'); }
+  else { addBal(bj.bet); el.textContent='🤝 ÉGALITÉ ! Remboursé'; el.classList.add('res-push'); }
+}
+function bjNew(){
+  initBJ();
+  document.getElementById('bjDC').innerHTML='';
+  document.getElementById('bjPC').innerHTML='';
+  document.getElementById('bjPS').textContent='Score : 0';
+  document.getElementById('bjDS').textContent='Score : ?';
+  document.getElementById('bjM').textContent='0';
+  document.getElementById('bjDeal').style.display='';
+  document.getElementById('bjHit').style.display='none';
+  document.getElementById('bjStand').style.display='none';
+  document.getElementById('bjNew').style.display='none';
+  document.getElementById('bjRes').className='result-box';
+}
+
+/* ═══════════════════════════════════════
+   ROULETTE — vraie roue Canvas animée
+═══════════════════════════════════════ */
+var roul={bet:0,type:null,val:null,spin:false,angle:0,animId:null};
+var RNUMS=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+var RREDS=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+function roulColor(n){ return n===0?'#1a7a3a':(RREDS.has(n)?'#8a1010':'#1a1a3a'); }
+function roulHTML(){
+  var nums=''; for(var i=0;i<=36;i++){var cl=i===0?'rg':RREDS.has(i)?'rr':'rb'; nums+='<div class="roul-num '+cl+'" data-n="'+i+'" onclick="roulNum('+i+')">'+i+'</div>';}
+  return '<div class="game-panel">'+
+    '<div class="panel-title">🎡 ROULETTE</div>'+
+    '<div class="roulette-wrap">'+
+      '<canvas id="rouletteCanvas" width="250" height="250"></canvas>'+
+      '<div class="roulette-result" id="roulRes">?</div>'+
+    '</div>'+
+    '<div class="roul-outside">'+
+      '<button class="roul-out-btn" onclick="roulOut(\'color\',\'r\',this)">🔴 Rouge</button>'+
+      '<button class="roul-out-btn" onclick="roulOut(\'color\',\'b\',this)">⚫ Noir</button>'+
+      '<button class="roul-out-btn" onclick="roulOut(\'parity\',\'e\',this)">Pair</button>'+
+      '<button class="roul-out-btn" onclick="roulOut(\'parity\',\'o\',this)">Impair</button>'+
+      '<button class="roul-out-btn" onclick="roulOut(\'half\',\'l\',this)">1-18</button>'+
+      '<button class="roul-out-btn" onclick="roulOut(\'half\',\'h\',this)">19-36</button>'+
+    '</div>'+
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:10px;" id="roulLbl">Choisissez un pari</div>'+
+    '<div class="roul-grid">'+nums+'</div>'+
+    '<div class="chips-row">'+
+      '<div class="chip c10" onclick="roulBet(10)">10</div>'+
+      '<div class="chip c25" onclick="roulBet(25)">25</div>'+
+      '<div class="chip c50" onclick="roulBet(50)">50</div>'+
+      '<div class="chip c100" onclick="roulBet(100)">100</div>'+
+      '<span class="bet-label">Mise : <span id="roulM">0</span></span>'+
+    '</div>'+
+    '<div class="btns-row">'+
+      '<button class="btn btn-purple" onclick="roulSpin()">🎡 Lancer</button>'+
+      '<button class="btn btn-gray" onclick="roulClear()">Effacer</button>'+
+    '</div>'+
+    '<div class="result-box" id="roulMsg"></div>'+
+  '</div>';
+}
+function initRoul(){
+  roul={bet:0,type:null,val:null,spin:false,angle:0,animId:null};
+  drawWheel(0); drawBall(0,0);
+}
+function drawWheel(angle){
+  var cv=document.getElementById('rouletteCanvas'); if(!cv)return;
+  var ctx=cv.getContext('2d'), cx=125,cy=125,r=118, arc=2*Math.PI/RNUMS.length;
+  ctx.clearRect(0,0,250,250);
+  // Outer ring
+  ctx.beginPath(); ctx.arc(cx,cy,r+3,0,2*Math.PI);
+  ctx.fillStyle='#2a1050'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,cy,r+3,0,2*Math.PI);
+  ctx.strokeStyle='rgba(124,58,237,0.6)'; ctx.lineWidth=3; ctx.stroke();
+  RNUMS.forEach(function(n,i){
+    var start=i*arc+angle-Math.PI/2;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,start+arc); ctx.closePath();
+    ctx.fillStyle=roulColor(n); ctx.fill();
+    ctx.strokeStyle='rgba(124,58,237,0.3)'; ctx.lineWidth=0.5; ctx.stroke();
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(start+arc/2);
+    ctx.textAlign='right'; ctx.fillStyle='#ddd'; ctx.font='bold 9px Arial';
+    ctx.fillText(n,r-5,3); ctx.restore();
+  });
+  // Center hub
+  ctx.beginPath(); ctx.arc(cx,cy,22,0,2*Math.PI);
+  var g=ctx.createRadialGradient(cx,cy,0,cx,cy,22);
+  g.addColorStop(0,'#4a2090'); g.addColorStop(1,'#0a0a20');
+  ctx.fillStyle=g; ctx.fill();
+  ctx.strokeStyle='rgba(167,139,250,0.6)'; ctx.lineWidth=2; ctx.stroke();
+}
+function drawBall(angle,ballAngle){
+  var cv=document.getElementById('rouletteCanvas'); if(!cv)return;
+  var ctx=cv.getContext('2d'), cx=125,cy=125, br=98;
+  drawWheel(angle);
+  // Ball
+  var bx=cx+Math.cos(ballAngle)*br, by=cy+Math.sin(ballAngle)*br;
+  ctx.beginPath(); ctx.arc(bx,by,6,0,2*Math.PI);
+  var g=ctx.createRadialGradient(bx-2,by-2,0,bx,by,6);
+  g.addColorStop(0,'#ffffff'); g.addColorStop(1,'#cccccc');
+  ctx.fillStyle=g; ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,0.4)'; ctx.lineWidth=1; ctx.stroke();
+}
+function roulBet(n){ if(roul.spin)return; if(n>balance)return; roul.bet+=n; addBal(-n); document.getElementById('roulM').textContent=roul.bet; }
+function roulNum(n){ if(roul.spin)return; roul.type='number';roul.val=n; document.querySelectorAll('.roul-num').forEach(function(e){e.classList.toggle('sel',parseInt(e.dataset.n)===n);}); document.querySelectorAll('.roul-out-btn').forEach(function(e){e.classList.remove('sel');}); document.getElementById('roulLbl').textContent='Numéro '+n+' — gain ×35'; }
+function roulOut(type,val,btn){ if(roul.spin)return; roul.type=type;roul.val=val; document.querySelectorAll('.roul-out-btn').forEach(function(e){e.classList.remove('sel');}); btn.classList.add('sel'); document.querySelectorAll('.roul-num').forEach(function(e){e.classList.remove('sel');}); document.getElementById('roulLbl').textContent=btn.textContent+' — gain ×2'; }
+function roulSpin(){
+  if(roul.spin)return;
+  if(roul.bet===0)return alert('Misez d\'abord !');
+  if(!roul.type)return alert('Choisissez un pari !');
+  roul.spin=true;
+  var resultIdx=Math.floor(Math.random()*RNUMS.length);
+  var result=RNUMS[resultIdx];
+  var targetAngle=-(resultIdx*2*Math.PI/RNUMS.length); // where result lands
+  var totalSpin=Math.PI*2*8+targetAngle; // 8 full turns + target
+  var start=null, duration=5000;
+  var wheelStart=roul.angle||0;
+  var ballStart=Math.random()*Math.PI*2;
+  function anim(ts){
+    if(!start)start=ts;
+    var prog=Math.min((ts-start)/duration,1);
+    // Ease out cubic
+    var ease=1-Math.pow(1-prog,4);
+    var wAngle=wheelStart+totalSpin*ease;
+    var ballR=95+Math.sin(prog*Math.PI)*20; // ball settles inward
+    var ballAngle=ballStart-totalSpin*2*ease; // ball spins faster opposite
+    document.getElementById('rouletteCanvas') && drawBall(wAngle, ballAngle*(1-ease*0.7));
+    if(prog<1){ roul.animId=requestAnimationFrame(anim); }
+    else{
+      roul.angle=wAngle; roul.spin=false;
+      drawBall(wAngle,targetAngle+Math.PI*1.5); // ball on result
+      document.getElementById('roulRes').textContent=result;
+      roulResolve(result);
+    }
+  }
+  requestAnimationFrame(anim);
+}
+function roulResolve(result){
+  var win=false,mult=0;
+  if(roul.type==='number'){ win=roul.val===result; mult=35; }
+  else if(roul.type==='color'){ win=result!==0&&(roul.val==='r'?RREDS.has(result):!RREDS.has(result)); mult=1; }
+  else if(roul.type==='parity'){ win=result!==0&&(roul.val==='e'?result%2===0:result%2!==0); mult=1; }
+  else if(roul.type==='half'){ win=roul.val==='l'?result>=1&&result<=18:result>=19&&result<=36; mult=1; }
+  var el=document.getElementById('roulMsg'); el.className='result-box';
+  if(win){ addBal(roul.bet*(mult+1)); el.textContent='✨ '+result+' — GAGNÉ ! +'+(roul.bet*mult)+' jetons'; el.classList.add('res-win'); }
+  else{ el.textContent='❌ '+result+' — PERDU ! -'+roul.bet+' jetons'; el.classList.add('res-lose'); }
+  roul.bet=0; roul.type=null; roul.val=null;
+  document.getElementById('roulM').textContent=0;
+  document.getElementById('roulLbl').textContent='Choisissez un pari';
+  document.querySelectorAll('.roul-num,.roul-out-btn').forEach(function(e){e.classList.remove('sel');});
+}
+function roulClear(){ if(roul.spin)return; if(roul.bet>0){addBal(roul.bet);roul.bet=0;document.getElementById('roulM').textContent=0;} roul.type=null;roul.val=null; document.querySelectorAll('.roul-num,.roul-out-btn').forEach(function(e){e.classList.remove('sel');}); document.getElementById('roulMsg').className='result-box'; }
+
+/* ═══════════════════════════════════════
+   SLOTS — rouleaux animés
+═══════════════════════════════════════ */
+var SYMS=['🍒','🍋','🍊','🍇','⭐','💎','7️⃣','🎰'];
+var PAYS={'🍒':2,'🍋':3,'🍊':4,'🍇':5,'⭐':8,'💎':15,'7️⃣':20,'🎰':50};
+var slot={spinning:false,bet:10,reels:[0,0,0]};
+function slotHTML(){
+  return '<div class="game-panel">'+
+    '<div class="panel-title">🎰 LUCKY REELS</div>'+
+    '<div class="slot-machine-body">'+
+      '<div class="slot-lights" id="slotLights">'+
+        Array(8).fill('<div class="slot-light"></div>').join('')+
+      '</div>'+
+      '<div class="slot-screen">'+
+        '<div class="slot-reel-window"><div class="slot-reel-strip" id="sr0">'+makeStrip()+'</div></div>'+
+        '<div class="slot-reel-window"><div class="slot-reel-strip" id="sr1">'+makeStrip()+'</div></div>'+
+        '<div class="slot-reel-window"><div class="slot-reel-strip" id="sr2">'+makeStrip()+'</div></div>'+
+      '</div>'+
+      '<div class="slot-win-line" id="slotWL"></div>'+
+      '<div class="slot-paytable">'+
+        Object.entries(PAYS).map(function(e){return '<div class="slot-pay-row"><span>'+e[0]+e[0]+e[0]+'</span> = ×'+e[1]+'</div>';}).join('')+
+      '</div>'+
+      '<div class="chips-row" style="justify-content:center;">'+
+        '<div class="chip c10" onclick="slotSetBet(10)">10</div>'+
+        '<div class="chip c25" onclick="slotSetBet(25)">25</div>'+
+        '<div class="chip c50" onclick="slotSetBet(50)">50</div>'+
+        '<div class="chip c100" onclick="slotSetBet(100)">100</div>'+
+        '<span class="bet-label">Mise : <span id="slotM">10</span></span>'+
+      '</div>'+
+      '<button class="btn btn-purple" id="slotBtn" onclick="slotSpin()" style="width:100%;font-size:18px;padding:16px;margin-top:8px;letter-spacing:3px;">▶ SPIN</button>'+
+    '</div>'+
+    '<div class="result-box" id="slotRes"></div>'+
+  '</div>';
+}
+function makeStrip(){
+  var syms=[...SYMS,...SYMS,...SYMS];
+  for(var i=syms.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=syms[i];syms[i]=syms[j];syms[j]=t;}
+  return syms.map(function(s){return '<div class="slot-symbol">'+s+'</div>';}).join('');
+}
+function slotSetBet(n){ if(slot.spinning)return; slot.bet=n; document.getElementById('slotM').textContent=n; }
+function flashLights(on){
+  document.querySelectorAll('.slot-light').forEach(function(l,i){
+    setTimeout(function(){ l.classList.toggle('on',on); }, i*60);
+  });
+}
+function slotSpin(){
+  if(slot.spinning)return;
+  if(slot.bet>balance)return alert('Solde insuffisant !');
+  addBal(-slot.bet); slot.spinning=true;
+  document.getElementById('slotBtn').textContent='⏳';
+  document.getElementById('slotRes').className='result-box';
+  document.getElementById('slotWL').classList.remove('active');
+  flashLights(true);
+  var results=[], stopped=0;
+  [0,1,2].forEach(function(i){
+    var strip=document.getElementById('sr'+i);
+    strip.innerHTML=makeStrip();
+    var sym=SYMS[Math.floor(Math.random()*SYMS.length)];
+    results[i]=sym;
+    var frames=0, maxFrames=15+(i*8);
+    var iv=setInterval(function(){
+      strip.style.transform='translateY(-'+(frames*90)+'px)';
+      frames++;
+      if(frames>=maxFrames){
+        clearInterval(iv);
+        // Set final symbol
+        strip.innerHTML='<div class="slot-symbol">'+sym+'</div>';
+        strip.style.transform='translateY(0)';
+        stopped++;
+        if(stopped===3){
+          slot.spinning=false;
+          document.getElementById('slotBtn').textContent='▶ SPIN';
+          slotResolve(results);
+        }
+      }
+    },80);
+  });
+}
+function slotResolve(res){
+  flashLights(false);
+  var el=document.getElementById('slotRes'); el.className='result-box';
+  if(res[0]===res[1]&&res[1]===res[2]){
+    var mult=PAYS[res[0]]||2, gain=slot.bet*mult;
+    addBal(gain); document.getElementById('slotWL').classList.add('active');
+    el.textContent=res[0]+' '+res[0]+' '+res[0]+' — JACKPOT ! +'+gain+' jetons (×'+mult+')';
+    el.classList.add('res-win');
+  } else if(res[0]===res[1]||res[1]===res[2]||res[0]===res[2]){
+    var g=Math.floor(slot.bet*1.5); addBal(g);
+    el.textContent='Deux identiques ! +'+g+' jetons'; el.classList.add('res-push');
+  } else {
+    el.textContent='Pas de chance... -'+slot.bet+' jetons'; el.classList.add('res-lose');
+  }
+}
+function initSlot(){}
+
+/* ═══════════════════════════════════════
+   CRAPS — dés 3D animés
+═══════════════════════════════════════ */
+var craps={phase:'out',point:null,bet:0,type:null,rolling:false};
+var DPIPS={1:[[1,1]],2:[[0,0],[2,2]],3:[[0,0],[1,1],[2,2]],4:[[0,0],[0,2],[2,0],[2,2]],5:[[0,0],[0,2],[1,1],[2,0],[2,2]],6:[[0,0],[0,2],[1,0],[1,2],[2,0],[2,2]]};
+function makeDie(id,val){
+  var d=document.getElementById(id); if(!d)return;
+  d.innerHTML=''; var pips=DPIPS[val]||[];
+  for(var r=0;r<3;r++) for(var c=0;c<3;c++){
+    var p=document.createElement('div');
+    p.className='pip'+(pips.some(function(x){return x[0]===r&&x[1]===c;})?'':' off');
+    d.appendChild(p);
+  }
+}
+function crapsHTML(){
+  return '<div class="craps-table-felt">'+
+    '<div class="panel-title" style="color:var(--green2)">🎲 CRAPS</div>'+
+    '<div class="craps-point-display"><div class="craps-point-num" id="crapsPoint">—</div><div class="craps-point-lbl" id="crapsPhase">Phase Come-Out</div></div>'+
+    '<div class="dice-container"><div class="die-3d" id="die1"></div><div class="die-3d" id="die2"></div></div>'+
+    '<div class="craps-total-display" id="crapsTotal">— + — = —</div>'+
+    '<div class="craps-bets-grid">'+
+      '<div class="craps-bet-opt" id="cbP" onclick="crapsType(\'pass\',this)"><div class="craps-bet-name">Pass Line</div><div class="craps-bet-desc">Gagner sur 7/11 au come-out</div></div>'+
+      '<div class="craps-bet-opt" id="cbD" onclick="crapsType(\'dont\',this)"><div class="craps-bet-name">Don\'t Pass</div><div class="craps-bet-desc">Gagner sur 2/3 au come-out</div></div>'+
+      '<div class="craps-bet-opt dis" id="cbC" onclick="crapsType(\'come\',this)"><div class="craps-bet-name">Come Bet</div><div class="craps-bet-desc">Après établissement du point</div></div>'+
+      '<div class="craps-bet-opt" id="cbA" onclick="crapsType(\'any7\',this)"><div class="craps-bet-name">Any Seven</div><div class="craps-bet-desc">Total exactement 7 — ×4</div></div>'+
+    '</div>'+
+    '<div class="chips-row">'+
+      '<div class="chip c10" onclick="crapsBet(10)">10</div>'+
+      '<div class="chip c25" onclick="crapsBet(25)">25</div>'+
+      '<div class="chip c50" onclick="crapsBet(50)">50</div>'+
+      '<div class="chip c100" onclick="crapsBet(100)">100</div>'+
+      '<span class="bet-label">Mise : <span id="crapsM">0</span></span>'+
+    '</div>'+
+    '<div class="btns-row">'+
+      '<button class="btn btn-green" onclick="crapsRoll()">🎲 Lancer les dés</button>'+
+      '<button class="btn btn-gray" onclick="crapsNew()">Nouveau</button>'+
+    '</div>'+
+    '<div class="result-box" id="crapsRes"></div>'+
+  '</div>';
+}
+function initCraps(){ craps={phase:'out',point:null,bet:0,type:null,rolling:false}; makeDie('die1',1); makeDie('die2',1); }
+function crapsType(t,btn){ if(craps.rolling)return; if(t==='come'&&craps.phase==='out')return; craps.type=t; document.querySelectorAll('.craps-bet-opt').forEach(function(b){b.classList.remove('sel');}); btn.classList.add('sel'); }
+function crapsBet(n){ if(craps.rolling)return; if(n>balance)return; craps.bet+=n; addBal(-n); document.getElementById('crapsM').textContent=craps.bet; }
+function crapsRoll(){
+  if(craps.rolling)return;
+  if(craps.bet===0)return alert('Misez d\'abord !');
+  if(!craps.type)return alert('Choisissez un pari !');
+  craps.rolling=true;
+  document.getElementById('die1').classList.add('rolling');
+  document.getElementById('die2').classList.add('rolling');
+  setTimeout(function(){
+    document.getElementById('die1').classList.remove('rolling');
+    document.getElementById('die2').classList.remove('rolling');
+    var d1=Math.floor(Math.random()*6)+1, d2=Math.floor(Math.random()*6)+1, tot=d1+d2;
+    makeDie('die1',d1); makeDie('die2',d2);
+    document.getElementById('crapsTotal').textContent=d1+' + '+d2+' = '+tot;
+    crapsResolve(d1,d2,tot); craps.rolling=false;
+  },900);
+}
+function crapsResolve(d1,d2,tot){
+  var el=document.getElementById('crapsRes'); el.className='result-box';
+  var bet=craps.bet, type=craps.type;
+  if(type==='any7'){
+    if(tot===7){addBal(bet*5);el.textContent='🎲 ANY SEVEN ! +'+bet*4+' jetons';el.classList.add('res-win');}
+    else{el.textContent='❌ '+tot+' — Pas 7. -'+bet+' jetons';el.classList.add('res-lose');}
+    craps.bet=0;craps.type=null;document.getElementById('crapsM').textContent=0;
+    document.querySelectorAll('.craps-bet-opt').forEach(function(b){b.classList.remove('sel');});return;
+  }
+  if(craps.phase==='out'){
+    if(type==='pass'){
+      if(tot===7||tot===11){addBal(bet*2);el.textContent='🎲 NATURAL '+tot+' ! +'+bet+' jetons';el.classList.add('res-win');crapsNew();}
+      else if(tot===2||tot===3||tot===12){el.textContent='💥 CRAPS '+tot+' ! -'+bet+' jetons';el.classList.add('res-lose');crapsNew();}
+      else{craps.point=tot;craps.phase='point';document.getElementById('crapsPoint').textContent=tot;document.getElementById('crapsPhase').textContent='Point — Faites '+tot+' avant un 7';document.getElementById('cbC').classList.remove('dis');el.textContent='Point établi : '+tot+'. Relancez !';el.classList.add('res-push');}
+    } else if(type==='dont'){
+      if(tot===2||tot===3){addBal(bet*2);el.textContent='🎲 Don\'t Pass gagne ! +'+bet+' jetons';el.classList.add('res-win');crapsNew();}
+      else if(tot===12){addBal(bet);el.textContent='🤝 Bar 12 — Égalité';el.classList.add('res-push');crapsNew();}
+      else if(tot===7||tot===11){el.textContent='💥 Don\'t Pass perd sur '+tot+'. -'+bet+' jetons';el.classList.add('res-lose');crapsNew();}
+      else{craps.point=tot;craps.phase='point';document.getElementById('crapsPoint').textContent=tot;document.getElementById('crapsPhase').textContent='Point — Voulez un 7 avant '+tot;document.getElementById('cbC').classList.remove('dis');el.textContent='Point : '+tot+'. Don\'t Pass gagne si 7 sort !';el.classList.add('res-push');}
+    }
+  } else {
+    if(type==='pass'){
+      if(tot===craps.point){addBal(bet*2);el.textContent='🎲 Point '+tot+' ! GAGNÉ ! +'+bet+' jetons';el.classList.add('res-win');crapsNew();}
+      else if(tot===7){el.textContent='💥 Seven-out ! -'+bet+' jetons';el.classList.add('res-lose');crapsNew();}
+      else{el.textContent=tot+' — Continuez à lancer !';el.classList.add('res-push');}
+    } else if(type==='dont'){
+      if(tot===7){addBal(bet*2);el.textContent='🎲 Seven-out ! +'+bet+' jetons';el.classList.add('res-win');crapsNew();}
+      else if(tot===craps.point){el.textContent='💥 Point sorti ! -'+bet+' jetons';el.classList.add('res-lose');crapsNew();}
+      else{el.textContent=tot+' — Continuez !';el.classList.add('res-push');}
+    } else if(type==='come'){
+      if(tot===7||tot===11){addBal(bet*2);el.textContent='🎲 Come gagne '+tot+' ! +'+bet+' jetons';el.classList.add('res-win');crapsNew();}
+      else if(tot===2||tot===3||tot===12){el.textContent='💥 Come perd '+tot+'. -'+bet+' jetons';el.classList.add('res-lose');crapsNew();}
+      else{el.textContent='Come point : '+tot+'. Relancez !';el.classList.add('res-push');}
+    }
+  }
+  if(el.classList.contains('res-win')||el.classList.contains('res-lose')){
+    craps.bet=0;document.getElementById('crapsM').textContent=0;
+    document.querySelectorAll('.craps-bet-opt').forEach(function(b){b.classList.remove('sel');});craps.type=null;
+  }
+}
+function crapsNew(){
+  craps={phase:'out',point:null,bet:0,type:null,rolling:false};
+  document.getElementById('crapsPoint').textContent='—';
+  document.getElementById('crapsPhase').textContent='Phase Come-Out';
+  document.getElementById('crapsM').textContent=0;
+  document.querySelectorAll('.craps-bet-opt').forEach(function(b){b.classList.remove('sel');});
+  document.getElementById('cbC').classList.add('dis');
+  makeDie('die1',1); makeDie('die2',1);
+  document.getElementById('crapsTotal').textContent='— + — = —';
+}
+
+/* ═══════════════════════════════════════
+   KENO — balles animées
+═══════════════════════════════════════ */
+var KPAYS=[0,0,1,2,4,8,15,30,60,120,300];
+var keno={sel:new Set(),bet:10,playing:false};
+function kenoHTML(){
+  var balls='';
+  for(var i=1;i<=80;i++) balls+='<div class="keno-ball" id="kb'+i+'" onclick="kToggle('+i+')">'+i+'</div>';
+  var pays=[0,1,2,3,4,5,6,7,8,9,10].map(function(h){
+    return '<div class="keno-pay-cell"><div class="keno-pay-hits">'+h+'✓</div><div class="keno-pay-mult">'+(KPAYS[h]?'×'+KPAYS[h]:'—')+'</div></div>';
+  }).join('');
+  return '<div class="keno-panel">'+
+    '<div class="panel-title" style="color:#f472b6">🔢 KENO</div>'+
+    '<div class="keno-payouts">'+pays+'</div>'+
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Choisissez jusqu\'à 10 numéros :</div>'+
+    '<div class="keno-grid">'+balls+'</div>'+
+    '<div style="font-size:13px;color:var(--muted);margin-bottom:12px;min-height:20px;" id="kenoStatus">Sélectionnez vos numéros</div>'+
+    '<div class="chips-row">'+
+      '<div class="chip c10" onclick="kSetBet(10)">10</div>'+
+      '<div class="chip c25" onclick="kSetBet(25)">25</div>'+
+      '<div class="chip c50" onclick="kSetBet(50)">50</div>'+
+      '<div class="chip c100" onclick="kSetBet(100)">100</div>'+
+      '<span class="bet-label">Mise : <span id="kenoM">10</span></span>'+
+    '</div>'+
+    '<div class="btns-row">'+
+      '<button class="btn btn-purple" onclick="kPlay()">🎰 Lancer le tirage</button>'+
+      '<button class="btn btn-gray" onclick="kClear()">Effacer</button>'+
+    '</div>'+
+    '<div class="result-box" id="kenoRes"></div>'+
+  '</div>';
+}
+function kSetBet(n){ if(keno.playing)return; keno.bet=n; document.getElementById('kenoM').textContent=n; }
+function kToggle(n){
+  if(keno.playing)return;
+  var el=document.getElementById('kb'+n);
+  if(keno.sel.has(n)){keno.sel.delete(n);el.classList.remove('sel');}
+  else if(keno.sel.size<10){keno.sel.add(n);el.classList.add('sel');}
+  document.getElementById('kenoStatus').textContent=keno.sel.size+'/10 numéros sélectionnés';
+}
+function kPlay(){
+  if(keno.playing)return;
+  if(keno.sel.size<1)return alert('Sélectionnez au moins 1 numéro !');
+  if(keno.bet>balance)return alert('Solde insuffisant !');
+  addBal(-keno.bet); keno.playing=true;
+  document.getElementById('kenoRes').className='result-box';
+  var pool=Array.from({length:80},function(_,i){return i+1;});
+  var drawn=[]; while(drawn.length<20){var idx=Math.floor(Math.random()*pool.length);drawn.push(pool.splice(idx,1)[0]);}
+  var i=0;
+  var iv=setInterval(function(){
+    if(i>=20){clearInterval(iv);kFinish(drawn);return;}
+    var n=drawn[i];
+    var el=document.getElementById('kb'+n);
+    if(el) el.classList.add(keno.sel.has(n)?'hit':'drawn');
+    document.getElementById('kenoStatus').textContent='Tirage : '+drawn.slice(0,i+1).join(' · ');
+    i++;
+  },150);
+}
+function kFinish(drawn){
+  var hits=Array.from(keno.sel).filter(function(n){return drawn.includes(n);}).length;
+  var mult=KPAYS[hits]||0, gain=keno.bet*mult;
+  var el=document.getElementById('kenoRes'); el.className='result-box';
+  if(gain>0){addBal(gain);el.textContent='✨ '+hits+' bons numéros ! +'+gain+' jetons (×'+mult+')';el.classList.add('res-win');}
+  else{el.textContent='❌ '+hits+' bons numéros. Perdu ! -'+keno.bet+' jetons';el.classList.add('res-lose');}
+  keno.playing=false;
+}
+function kClear(){
+  if(keno.playing)return;
+  keno.sel=new Set();
+  document.querySelectorAll('.keno-ball').forEach(function(e){e.classList.remove('sel','drawn','hit');});
+  document.getElementById('kenoStatus').textContent='Sélectionnez vos numéros';
+  document.getElementById('kenoRes').className='result-box';
+}
+
+/* ═══════════════════════════════════════
+   BACCARAT
+═══════════════════════════════════════ */
+var bacc={};
+function baccV(c){if('JQK10'.indexOf(c.r)!==-1||(c.r==='1'&&false)){}; if(c.r==='J'||c.r==='Q'||c.r==='K'||c.r==='10')return 0; if(c.r==='A')return 1; return parseInt(c.r);}
+function baccScore(h){return h.reduce(function(s,c){return s+baccV(c);},0)%10;}
+function baccHTML(){
+  return '<div class="bacc-felt">'+
+    '<div class="panel-title" style="color:var(--green2)">🎴 BACCARAT</div>'+
+    '<div class="bacc-bets-row">'+
+      '<div class="bacc-bet-card" id="bbP" onclick="baccSel(\'player\',this)"><div class="bacc-bet-name">JOUEUR</div><div class="bacc-bet-odds">Gain ×2</div></div>'+
+      '<div class="bacc-bet-card" id="bbT" onclick="baccSel(\'tie\',this)"><div class="bacc-bet-name">ÉGALITÉ</div><div class="bacc-bet-odds">Gain ×9</div></div>'+
+      '<div class="bacc-bet-card" id="bbB" onclick="baccSel(\'banker\',this)"><div class="bacc-bet-name">BANQUIER</div><div class="bacc-bet-odds">Gain ×1.95</div></div>'+
+    '</div>'+
+    '<div class="chips-row" style="justify-content:center;">'+
+      '<div class="chip c10" onclick="baccBet(10)">10</div>'+
+      '<div class="chip c25" onclick="baccBet(25)">25</div>'+
+      '<div class="chip c50" onclick="baccBet(50)">50</div>'+
+      '<div class="chip c100" onclick="baccBet(100)">100</div>'+
+      '<span class="bet-label">Mise : <span id="baccM">0</span></span>'+
+    '</div>'+
+    '<div class="bacc-hands">'+
+      '<div class="bacc-hand-box"><div class="bacc-hand-lbl">Joueur</div><div class="cards-area" id="baccPC" style="justify-content:center"></div><div class="bacc-hand-score" id="baccPS">0</div></div>'+
+      '<div class="bacc-hand-box"><div class="bacc-hand-lbl">Banquier</div><div class="cards-area" id="baccBC" style="justify-content:center"></div><div class="bacc-hand-score" id="baccBS">0</div></div>'+
+    '</div>'+
+    '<div class="btns-row" style="justify-content:center;">'+
+      '<button class="btn btn-green" onclick="baccDeal()">Distribuer</button>'+
+      '<button class="btn btn-gray" id="baccNew" onclick="baccReset()" style="display:none">Nouvelle partie</button>'+
+    '</div>'+
+    '<div class="result-box" id="baccRes"></div>'+
+  '</div>';
+}
+function initBacc(){ bacc={deck:newDeck(),bet:0,type:null,phase:'bet'}; }
+function baccSel(t,btn){ if(bacc.phase!=='bet')return; bacc.type=t; document.querySelectorAll('.bacc-bet-card').forEach(function(b){b.classList.remove('sel');}); btn.classList.add('sel'); }
+function baccBet(n){ if(bacc.phase!=='bet')return; if(n>balance)return; bacc.bet+=n; addBal(-n); document.getElementById('baccM').textContent=bacc.bet; }
+function baccDeal(){
+  if(bacc.bet===0)return alert('Misez d\'abord !');
+  if(!bacc.type)return alert('Choisissez un pari !');
+  bacc.phase='play';
+  if(bacc.deck.length<10)bacc.deck=newDeck();
+  var p=[bacc.deck.pop(),bacc.deck.pop()], b=[bacc.deck.pop(),bacc.deck.pop()];
+  var pv=baccScore(p), bv=baccScore(b);
+  if(pv<=5) p.push(bacc.deck.pop());
+  pv=baccScore(p);
+  var t3=p.length===3?baccV(p[2]):-1;
+  if(bv<=2) b.push(bacc.deck.pop());
+  else if(bv===3&&t3!==8) b.push(bacc.deck.pop());
+  else if(bv===4&&t3>=2&&t3<=7) b.push(bacc.deck.pop());
+  else if(bv===5&&t3>=4&&t3<=7) b.push(bacc.deck.pop());
+  else if(bv===6&&t3>=6&&t3<=7) b.push(bacc.deck.pop());
+  pv=baccScore(p); bv=baccScore(b);
+  var pc=document.getElementById('baccPC'), bc=document.getElementById('baccBC');
+  pc.innerHTML=''; p.forEach(function(c){pc.appendChild(cardEl(c));});
+  bc.innerHTML=''; b.forEach(function(c){bc.appendChild(cardEl(c));});
+  document.getElementById('baccPS').textContent=pv;
+  document.getElementById('baccBS').textContent=bv;
+  var winner=pv>bv?'player':bv>pv?'banker':'tie';
+  var el=document.getElementById('baccRes'); el.className='result-box';
+  var bet=bacc.bet, type=bacc.type;
+  if(winner==='tie'&&type==='tie'){addBal(bet*9);el.textContent='🤝 ÉGALITÉ ! +'+bet*8+' jetons (×9)';el.classList.add('res-win');}
+  else if(winner==='player'&&type==='player'){addBal(bet*2);el.textContent='✅ Joueur gagne '+pv+' vs '+bv+' ! +'+bet+' jetons';el.classList.add('res-win');}
+  else if(winner==='banker'&&type==='banker'){var g=Math.floor(bet*0.95);addBal(bet+g);el.textContent='✅ Banquier gagne '+bv+' vs '+pv+' ! +'+g+' jetons';el.classList.add('res-win');}
+  else if(winner==='tie'&&type!=='tie'){addBal(bet);el.textContent='🤝 Égalité — Mise remboursée';el.classList.add('res-push');}
+  else{el.textContent='❌ '+(winner==='player'?'Joueur':'Banquier')+' gagne. -'+bet+' jetons';el.classList.add('res-lose');}
+  bacc.phase='done'; document.getElementById('baccNew').style.display='';
+}
+function baccReset(){
+  bacc={deck:bacc.deck,bet:0,type:null,phase:'bet'};
+  document.getElementById('baccPC').innerHTML='';
+  document.getElementById('baccBC').innerHTML='';
+  document.getElementById('baccPS').textContent='0';
+  document.getElementById('baccBS').textContent='0';
+  document.getElementById('baccM').textContent='0';
+  document.getElementById('baccNew').style.display='none';
+  document.getElementById('baccRes').className='result-box';
+  document.querySelectorAll('.bacc-bet-card').forEach(function(b){b.classList.remove('sel');});
+}
+
+go('bj');
+</script>
+</body>
+</html>
