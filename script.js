@@ -2,6 +2,13 @@ const state = {
   balance: 500,
   history: [],
   currentGame: 'blackjack',
+  stats: {
+    rounds: 0,
+    wins: 0,
+    losses: 0,
+    totalWon: 0,
+    totalLost: 0,
+  },
 };
 
 const gameTitle = document.getElementById('gameTitle');
@@ -9,6 +16,7 @@ const gameIntro = document.getElementById('gameIntro');
 const gameArea = document.getElementById('gameArea');
 const balanceValue = document.getElementById('balanceValue');
 const historyList = document.getElementById('historyList');
+const statsGrid = document.getElementById('statsGrid');
 
 function formatMoney(value) {
   return `${value} jetons`;
@@ -16,6 +24,7 @@ function formatMoney(value) {
 
 function updateBalance() {
   balanceValue.textContent = state.balance;
+  updateStats();
 }
 
 function addHistory(text) {
@@ -24,9 +33,32 @@ function addHistory(text) {
   historyList.innerHTML = state.history.map((item) => `<li>${item}</li>`).join('');
 }
 
+function recordRound(result, amount, won) {
+  state.stats.rounds += 1;
+  if (result === 'win') {
+    state.stats.wins += 1;
+    state.stats.totalWon += won;
+  } else if (result === 'lose') {
+    state.stats.losses += 1;
+    state.stats.totalLost += amount;
+  }
+  updateStats();
+}
+
+function updateStats() {
+  statsGrid.innerHTML = [
+    ['Parties', state.stats.rounds],
+    ['Victoires', state.stats.wins],
+    ['Défaites', state.stats.losses],
+    ['Jetons gagnés', state.stats.totalWon],
+    ['Jetons perdus', state.stats.totalLost],
+    ['Solde', state.balance],
+  ].map(([label, value]) => `<article class="stat-box"><strong>${value}</strong><span>${label}</span></article>`).join('');
+}
+
 function renderCardHand(cards) {
   return `<div class="hand-row">${cards
-    .map((card) => `<span class="card-chip">${card}</span>`)
+    .map((card, index) => `<span class="card-chip pop" style="animation-delay:${index * 40}ms">${card}</span>`)
     .join('')}</div>`;
 }
 
@@ -64,7 +96,7 @@ function renderBlackjack() {
       <h3>Blackjack</h3>
       <p class="muted">Le but : totaliser 21 sans dépasser. Le croupier joue à partir de 17.</p>
       <div class="form-row">
-        <div class="field"><label for="bjBet">Mise</label><input id="bjBet" type="number" min="10" value="50" /></div>
+        <div class="field"><label for="bjBet">Mise</label><input id="bjBet" type="number" min="10" max="${state.balance}" value="50" /></div>
         <div class="inline-actions">
           <button class="button button-primary" id="bjStart">Démarrer</button>
           <button class="button button-secondary" id="bjRules">Règles</button>
@@ -95,20 +127,25 @@ function renderBlackjack() {
       let tone = 'info';
 
       if (playerScore === 21 && player.length === 2 && dealerScore !== 21) {
-        state.balance += Math.floor(bet * 2.5);
-        message = `Blackjack ! Vous gagnez ${Math.floor(bet * 1.5)} jetons bonus (${bet} + ${Math.floor(bet * 1.5)}).`;
+        const bonus = Math.floor(bet * 1.5);
+        state.balance += bet + bonus;
+        message = `Blackjack ! Vous gagnez ${bonus} jetons bonus (${bet} + ${bonus}).`;
         tone = 'success';
+        recordRound('win', bet, bonus);
       } else if (dealerScore > 21 || playerScore > dealerScore) {
         state.balance += bet * 2;
         message = `Vous gagnez ${bet} jetons. Score final : ${playerScore} contre ${dealerScore}.`;
         tone = 'success';
+        recordRound('win', bet, bet);
       } else if (playerScore === dealerScore) {
         state.balance += bet;
         message = `Égalité, votre mise de ${bet} jetons est remboursée.`;
         tone = 'info';
+        recordRound('draw', bet, 0);
       } else {
         message = `Le croupier gagne. Vous perdez ${bet} jetons.`;
         tone = 'error';
+        recordRound('lose', bet, 0);
       }
 
       showResult('bjResult', `${message} Solde : ${formatMoney(state.balance)}.`, tone);
@@ -182,7 +219,7 @@ function renderRoulette() {
           </select>
         </div>
         <div class="field"><label for="rouletteValue">Valeur</label><input id="rouletteValue" type="text" value="17" /></div>
-        <div class="field"><label for="rouletteBet">Mise</label><input id="rouletteBet" type="number" min="10" value="40" /></div>
+        <div class="field"><label for="rouletteBet">Mise</label><input id="rouletteBet" type="number" min="10" max="${state.balance}" value="40" /></div>
       </div>
       <div class="inline-actions"><button class="button button-primary" id="rouletteStart">Lancer</button></div>
       <div id="rouletteResult" class="result-box info">Choisissez le pari et lancez la roulette.</div>
@@ -235,9 +272,11 @@ function renderRoulette() {
       state.balance += bet + gain;
       showResult('rouletteResult', `Résultat : ${result} (${color}, ${parity}, ${half}). Vous gagnez ${gain} jetons sur le pari ${detail}.`, 'success');
       addHistory(`Roulette : ${result} (${color}) — gain de ${gain} jetons.`);
+      recordRound('win', bet, gain);
     } else {
       showResult('rouletteResult', `Résultat : ${result} (${color}, ${parity}, ${half}). Vous perdez ${bet} jetons.`, 'error');
       addHistory(`Roulette : ${result} (${color}) — perte de ${bet} jetons.`);
+      recordRound('lose', bet, 0);
     }
     updateBalance();
   });
@@ -256,7 +295,7 @@ function renderCraps() {
             <option value="any7">Any Seven</option>
           </select>
         </div>
-        <div class="field"><label for="crapsBet">Mise</label><input id="crapsBet" type="number" min="10" value="30" /></div>
+        <div class="field"><label for="crapsBet">Mise</label><input id="crapsBet" type="number" min="10" max="${state.balance}" value="30" /></div>
         <div class="inline-actions"><button class="button button-primary" id="crapsStart">Lancer les dés</button></div>
       </div>
       <div id="crapsResult" class="result-box info">Choisissez votre pari puis lancez les dés.</div>
@@ -279,12 +318,15 @@ function renderCraps() {
 
     if (type === 'any7') {
       if (total === 7) {
-        state.balance += bet + bet * 4;
-        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Any Seven ! Vous gagnez ${bet * 4} jetons bonus.`, 'success');
-        addHistory(`Craps : Any Seven — gain de ${bet * 4} jetons.`);
+        const gain = bet * 4;
+        state.balance += bet + gain;
+        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Any Seven ! Vous gagnez ${gain} jetons bonus.`, 'success');
+        addHistory(`Craps : Any Seven — gain de ${gain} jetons.`);
+        recordRound('win', bet, gain);
       } else {
         showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Pas de 7, vous perdez ${bet} jetons.`, 'error');
         addHistory(`Craps : Any Seven — perte de ${bet} jetons.`);
+        recordRound('lose', bet, 0);
       }
       updateBalance();
       return;
@@ -295,9 +337,11 @@ function renderCraps() {
         state.balance += bet * 2;
         showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Pass Line gagnant : +${bet} jetons.`, 'success');
         addHistory(`Craps : Pass Line — gain de ${bet} jetons.`);
+        recordRound('win', bet, bet);
       } else if (total === 2 || total === 3 || total === 12) {
         showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Craps, vous perdez ${bet} jetons.`, 'error');
         addHistory(`Craps : Pass Line — perte de ${bet} jetons.`);
+        recordRound('lose', bet, 0);
       } else {
         showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Point établi : continuez jusqu'à obtenir ${total} avant un 7.`, 'info');
         addHistory(`Craps : point ${total} établi.`);
@@ -307,6 +351,7 @@ function renderCraps() {
         state.balance += bet * 2;
         showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Don't Pass gagnant : +${bet} jetons.`, 'success');
         addHistory(`Craps : Don't Pass — gain de ${bet} jetons.`);
+        recordRound('win', bet, bet);
       } else if (total === 12) {
         state.balance += bet;
         showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Bar 12, mise remboursée.`, 'info');
@@ -314,6 +359,7 @@ function renderCraps() {
       } else if (total === 7 || total === 11) {
         showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Don't Pass perdu : -${bet} jetons.`, 'error');
         addHistory(`Craps : Don't Pass — perte de ${bet} jetons.`);
+        recordRound('lose', bet, 0);
       } else {
         showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Le point est ${total}, continuez jusqu'à obtenir un 7.`, 'info');
         addHistory(`Craps : point ${total} établi.`);
@@ -330,7 +376,7 @@ function renderSlots() {
       <h3>Machine à sous</h3>
       <p class="muted">Trois symboles identiques rapportent un jackpot, deux identiques donnent un gain partiel.</p>
       <div class="form-row">
-        <div class="field"><label for="slotsBet">Mise</label><input id="slotsBet" type="number" min="10" value="25" /></div>
+        <div class="field"><label for="slotsBet">Mise</label><input id="slotsBet" type="number" min="10" max="${state.balance}" value="25" /></div>
         <div class="inline-actions"><button class="button button-primary" id="slotsStart">Tirer</button></div>
       </div>
       <div id="slotsResult" class="result-box info">Choisissez votre mise puis faites tourner les rouleaux.</div>
@@ -357,14 +403,17 @@ function renderSlots() {
       state.balance += bet + gain;
       showResult('slotsResult', `Jackpot ! ${r1} ${r2} ${r3} — vous remportez ${gain} jetons (×${coeff}).`, 'success');
       addHistory(`Slots : jackpot ${r1}${r2}${r3} (+${gain}).`);
+      recordRound('win', bet, gain);
     } else if (r1 === r2 || r2 === r3 || r1 === r3) {
       const gain = Math.floor(bet * 1.5);
       state.balance += bet + gain;
       showResult('slotsResult', `Deux symboles identiques : ${r1} ${r2} ${r3}. Vous gagnez ${gain} jetons.`, 'info');
       addHistory(`Slots : 2 identiques ${r1}${r2}${r3} (+${gain}).`);
+      recordRound('win', bet, gain);
     } else {
       showResult('slotsResult', `Aucun alignement : ${r1} ${r2} ${r3}. Vous perdez ${bet} jetons.`, 'error');
       addHistory(`Slots : échec ${r1}${r2}${r3} (-${bet}).`);
+      recordRound('lose', bet, 0);
     }
     updateBalance();
   });

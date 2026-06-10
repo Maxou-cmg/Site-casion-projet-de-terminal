@@ -309,6 +309,50 @@ a { text-decoration: none; }
   font-weight: 700;
 }
 
+.card-chip.pop {
+  animation: cardPop 0.45s ease;
+}
+
+@keyframes cardPop {
+  0% { transform: translateY(0) rotate(0deg); }
+  40% { transform: translateY(-4px) rotate(-4deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+.spin-pill {
+  animation: spinPulse 0.8s linear infinite;
+}
+
+@keyframes spinPulse {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.stat-box {
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.stat-box strong {
+  display: block;
+  font-size: 1.2rem;
+  color: var(--success);
+}
+
+.stat-box span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .history-list {
   list-style: none;
   padding: 0;
