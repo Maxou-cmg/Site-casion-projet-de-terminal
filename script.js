@@ -159,12 +159,25 @@ function renderBlackjack() {
       const dealerScore = score(dealer.slice(0, 1));
 
       gameArea.innerHTML = `
-        <article class="game-box">
-          <h3>Blackjack en cours</h3>
-          <p class="muted">Mise : ${bet} jetons</p>
-          <div class="badge-row"><span>Vous : ${playerScore}</span><span>Croupier visible : ${dealerScore}</span></div>
-          <p><strong>Vos cartes</strong>${renderCardHand(player)}</p>
-          <p><strong>Cartes du croupier</strong>${renderCardHand(dealerVisible)}</p>
+        <article class="game-box casino-surface">
+          <div class="table-top">
+            <p class="table-label">Blackjack</p>
+            <h3>Table de jeu</h3>
+            <p class="muted">Mise : ${bet} jetons</p>
+            <div class="badge-row"><span>Vous : ${playerScore}</span><span>Croupier visible : ${dealerScore}</span></div>
+            <div class="card-stack">
+              <div>
+                <strong>Vos cartes</strong>
+                ${renderCardHand(player)}
+              </div>
+            </div>
+            <div class="card-stack">
+              <div>
+                <strong>Cartes du croupier</strong>
+                ${renderCardHand(dealerVisible)}
+              </div>
+            </div>
+          </div>
           <div class="inline-actions">
             <button class="button button-primary" id="bjHit">Tirer</button>
             <button class="button button-secondary" id="bjStand">Rester</button>
@@ -206,20 +219,24 @@ function renderBlackjack() {
 
 function renderRoulette() {
   gameArea.innerHTML = `
-    <article class="game-box">
-      <h3>Roulette</h3>
-      <p class="muted">Choisissez un numéro (0–36), la couleur, la parité ou les moitiés de la roue.</p>
-      <div class="form-row">
-        <div class="field"><label for="rouletteType">Type de pari</label>
-          <select id="rouletteType">
-            <option value="numero">Numéro plein</option>
-            <option value="couleur">Rouge / Noir</option>
-            <option value="parite">Pair / Impair</option>
-            <option value="moitie">1–18 / 19–36</option>
-          </select>
+    <article class="game-box casino-surface">
+      <div class="table-top">
+        <p class="table-label">Roulette</p>
+        <h3>Roue de fortune</h3>
+        <p class="muted">Choisissez un numéro (0–36), la couleur, la parité ou les moitiés de la roue.</p>
+        <div class="form-row">
+          <div class="field"><label for="rouletteType">Type de pari</label>
+            <select id="rouletteType">
+              <option value="numero">Numéro plein</option>
+              <option value="couleur">Rouge / Noir</option>
+              <option value="parite">Pair / Impair</option>
+              <option value="moitie">1–18 / 19–36</option>
+            </select>
+          </div>
+          <div class="field"><label for="rouletteValue">Valeur</label><input id="rouletteValue" type="text" value="17" /></div>
+          <div class="field"><label for="rouletteBet">Mise</label><input id="rouletteBet" type="number" min="10" max="${state.balance}" value="40" /></div>
         </div>
-        <div class="field"><label for="rouletteValue">Valeur</label><input id="rouletteValue" type="text" value="17" /></div>
-        <div class="field"><label for="rouletteBet">Mise</label><input id="rouletteBet" type="number" min="10" max="${state.balance}" value="40" /></div>
+        <div class="roulette-wheel spin-pill" aria-label="Roulette animée"><div class="roulette-center"></div></div>
       </div>
       <div class="inline-actions"><button class="button button-primary" id="rouletteStart">Lancer</button></div>
       <div id="rouletteResult" class="result-box info">Choisissez le pari et lancez la roulette.</div>
@@ -284,19 +301,23 @@ function renderRoulette() {
 
 function renderCraps() {
   gameArea.innerHTML = `
-    <article class="game-box">
-      <h3>Craps</h3>
-      <p class="muted">Choisissez un type de pari : Pass Line, Don't Pass ou Any Seven.</p>
-      <div class="form-row">
-        <div class="field"><label for="crapsType">Pari</label>
-          <select id="crapsType">
-            <option value="pass">Pass Line</option>
-            <option value="dontpass">Don't Pass</option>
-            <option value="any7">Any Seven</option>
-          </select>
+    <article class="game-box casino-surface">
+      <div class="table-top">
+        <p class="table-label">Craps</p>
+        <h3>Table de dés</h3>
+        <p class="muted">Choisissez un type de pari : Pass Line, Don't Pass ou Any Seven.</p>
+        <div class="form-row">
+          <div class="field"><label for="crapsType">Pari</label>
+            <select id="crapsType">
+              <option value="pass">Pass Line</option>
+              <option value="dontpass">Don't Pass</option>
+              <option value="any7">Any Seven</option>
+            </select>
+          </div>
+          <div class="field"><label for="crapsBet">Mise</label><input id="crapsBet" type="number" min="10" max="${state.balance}" value="30" /></div>
+          <div class="inline-actions"><button class="button button-primary" id="crapsStart">Lancer les dés</button></div>
         </div>
-        <div class="field"><label for="crapsBet">Mise</label><input id="crapsBet" type="number" min="10" max="${state.balance}" value="30" /></div>
-        <div class="inline-actions"><button class="button button-primary" id="crapsStart">Lancer les dés</button></div>
+        <div class="badge-row"><span class="dice-face">⚀</span><span class="dice-face">⚁</span></div>
       </div>
       <div id="crapsResult" class="result-box info">Choisissez votre pari puis lancez les dés.</div>
     </article>
@@ -372,12 +393,20 @@ function renderCraps() {
 
 function renderSlots() {
   gameArea.innerHTML = `
-    <article class="game-box">
-      <h3>Machine à sous</h3>
-      <p class="muted">Trois symboles identiques rapportent un jackpot, deux identiques donnent un gain partiel.</p>
-      <div class="form-row">
-        <div class="field"><label for="slotsBet">Mise</label><input id="slotsBet" type="number" min="10" max="${state.balance}" value="25" /></div>
-        <div class="inline-actions"><button class="button button-primary" id="slotsStart">Tirer</button></div>
+    <article class="game-box casino-surface">
+      <div class="table-top">
+        <p class="table-label">Machine à sous</p>
+        <h3>Cabine de jeu</h3>
+        <p class="muted">Trois symboles identiques rapportent un jackpot, deux identiques donnent un gain partiel.</p>
+        <div class="form-row">
+          <div class="field"><label for="slotsBet">Mise</label><input id="slotsBet" type="number" min="10" max="${state.balance}" value="25" /></div>
+          <div class="inline-actions"><button class="button button-primary" id="slotsStart">Tirer</button></div>
+        </div>
+        <div class="slot-machine">
+          <div class="slot-reel spin">🍒</div>
+          <div class="slot-reel spin">🍋</div>
+          <div class="slot-reel spin">⭐</div>
+        </div>
       </div>
       <div id="slotsResult" class="result-box info">Choisissez votre mise puis faites tourner les rouleaux.</div>
     </article>

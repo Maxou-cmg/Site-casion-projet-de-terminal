@@ -233,6 +233,110 @@ a { text-decoration: none; }
 
 .game-box {
   padding: 14px;
+  background:
+    linear-gradient(135deg, rgba(12, 18, 30, 0.98), rgba(18, 26, 46, 0.98));
+}
+
+.casino-surface {
+  display: grid;
+  gap: 12px;
+}
+
+.table-top {
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    radial-gradient(circle at top, rgba(73, 211, 255, 0.08), transparent 25%),
+    linear-gradient(145deg, #0f172a, #13233a 55%, #0b1220 100%);
+  padding: 14px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 12px 28px rgba(0,0,0,0.35);
+}
+
+.table-label {
+  color: var(--accent-2);
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-size: 0.72rem;
+}
+
+.roulette-wheel {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin: 8px 0;
+  background:
+    radial-gradient(circle, #1e293b 0 20%, #111827 20% 45%, #0f172a 45% 100%);
+  border: 6px solid #e5e7eb;
+  box-shadow: 0 0 0 6px rgba(255,255,255,0.04), 0 10px 30px rgba(0,0,0,0.45);
+}
+
+.roulette-center {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fef08a, #f59e0b);
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
+}
+
+.dice-face {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  background: linear-gradient(145deg, #fef3c7, #fb7185);
+  color: #111827;
+  box-shadow: inset 0 -2px 0 rgba(17,24,39,0.2), 0 8px 18px rgba(0,0,0,0.35);
+}
+
+.slot-machine {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 18px;
+  background: linear-gradient(150deg, #111827, #172554);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.slot-reel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 54px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 1.4rem;
+}
+
+.slot-reel.spin {
+  animation: reelSpin 0.6s linear infinite;
+}
+
+@keyframes reelSpin {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
+}
+
+.card-stack {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.card-chip.large {
+  min-width: 56px;
+  min-height: 72px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #ffffff, #dbeafe);
+  color: #111827;
+  box-shadow: 0 10px 18px rgba(0,0,0,0.35);
 }
 
 .game-box h3 { margin-top: 0; margin-bottom: 8px; }
