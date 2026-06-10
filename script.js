@@ -250,6 +250,7 @@ function renderRoulette() {
   `;
 
   document.getElementById('rouletteStart').addEventListener('click', () => {
+    const wheel = document.querySelector('.roulette-wheel');
     const bet = Number(document.getElementById('rouletteBet').value || 0);
     if (!Number.isFinite(bet) || bet < 10 || bet > state.balance) {
       showResult('rouletteResult', 'Mise invalide : minimum 10 jetons.', 'error');
@@ -259,10 +260,23 @@ function renderRoulette() {
     const type = document.getElementById('rouletteType').value;
     const value = document.getElementById('rouletteValue').value.trim().toUpperCase();
     const result = Math.floor(Math.random() * 37);
+
+    wheel.style.transform = 'rotate(0deg)';
+    wheel.animate([
+      { transform: 'rotate(0deg)' },
+      { transform: 'rotate(720deg)' },
+      { transform: 'rotate(1080deg)' },
+    ], { duration: 2600, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
+    showResult('rouletteResult', 'La roue tourne… attendez l’arrêt de la bille.', 'info');
+
     const isRed = result !== 0 && [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].includes(result);
     const color = result === 0 ? 'vert' : (isRed ? 'rouge' : 'noir');
     const parity = result % 2 === 0 ? 'pair' : 'impair';
     const half = result >= 19 ? '19-36' : result === 0 ? '0' : '1-18';
+
+    setTimeout(() => {
+      wheel.style.transform = `rotate(${result * 9 + 1800}deg)`;
+    }, 200);
 
     let win = false;
     let gain = 0;
@@ -290,18 +304,20 @@ function renderRoulette() {
       detail = `moitié ${choice}`;
     }
 
-    state.balance -= bet;
-    if (win) {
-      state.balance += bet + gain;
-      showResult('rouletteResult', `Résultat : ${result} (${color}, ${parity}, ${half}). Vous gagnez ${gain} jetons sur le pari ${detail}.`, 'success');
-      addHistory(`Roulette : ${result} (${color}) — gain de ${gain} jetons.`);
-      recordRound('win', bet, gain);
-    } else {
-      showResult('rouletteResult', `Résultat : ${result} (${color}, ${parity}, ${half}). Vous perdez ${bet} jetons.`, 'error');
-      addHistory(`Roulette : ${result} (${color}) — perte de ${bet} jetons.`);
-      recordRound('lose', bet, 0);
-    }
-    updateBalance();
+    setTimeout(() => {
+      state.balance -= bet;
+      if (win) {
+        state.balance += bet + gain;
+        showResult('rouletteResult', `Résultat : ${result} (${color}, ${parity}, ${half}). Vous gagnez ${gain} jetons sur le pari ${detail}.`, 'success');
+        addHistory(`Roulette : ${result} (${color}) — gain de ${gain} jetons.`);
+        recordRound('win', bet, gain);
+      } else {
+        showResult('rouletteResult', `Résultat : ${result} (${color}, ${parity}, ${half}). Vous perdez ${bet} jetons.`, 'error');
+        addHistory(`Roulette : ${result} (${color}) — perte de ${bet} jetons.`);
+        recordRound('lose', bet, 0);
+      }
+      updateBalance();
+    }, 2700);
   });
 }
 
@@ -330,70 +346,80 @@ function renderCraps() {
   `;
 
   document.getElementById('crapsStart').addEventListener('click', () => {
+    const diceFaces = document.querySelectorAll('.dice-face');
     const bet = Number(document.getElementById('crapsBet').value || 0);
     if (!Number.isFinite(bet) || bet < 10 || bet > state.balance) {
       showResult('crapsResult', 'Mise invalide : minimum 10 jetons.', 'error');
       return;
     }
 
+    diceFaces.forEach((die) => die.classList.add('rolling'));
+    showResult('crapsResult', 'Les dés tournent…', 'info');
+
     const type = document.getElementById('crapsType').value;
     const d1 = Math.floor(Math.random() * 6) + 1;
     const d2 = Math.floor(Math.random() * 6) + 1;
     const total = d1 + d2;
 
-    state.balance -= bet;
+    setTimeout(() => {
+      diceFaces.forEach((die) => die.classList.remove('rolling'));
+      diceFaces[0].textContent = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][d1 - 1];
+      diceFaces[1].textContent = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][d2 - 1];
 
-    if (type === 'any7') {
-      if (total === 7) {
-        const gain = bet * 4;
-        state.balance += bet + gain;
-        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Any Seven ! Vous gagnez ${gain} jetons bonus.`, 'success');
-        addHistory(`Craps : Any Seven — gain de ${gain} jetons.`);
-        recordRound('win', bet, gain);
-      } else {
-        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Pas de 7, vous perdez ${bet} jetons.`, 'error');
-        addHistory(`Craps : Any Seven — perte de ${bet} jetons.`);
-        recordRound('lose', bet, 0);
+      state.balance -= bet;
+
+      if (type === 'any7') {
+        if (total === 7) {
+          const gain = bet * 4;
+          state.balance += bet + gain;
+          showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Any Seven ! Vous gagnez ${gain} jetons bonus.`, 'success');
+          addHistory(`Craps : Any Seven — gain de ${gain} jetons.`);
+          recordRound('win', bet, gain);
+        } else {
+          showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Pas de 7, vous perdez ${bet} jetons.`, 'error');
+          addHistory(`Craps : Any Seven — perte de ${bet} jetons.`);
+          recordRound('lose', bet, 0);
+        }
+        updateBalance();
+        return;
       }
+
+      if (type === 'pass') {
+        if (total === 7 || total === 11) {
+          state.balance += bet * 2;
+          showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Pass Line gagnant : +${bet} jetons.`, 'success');
+          addHistory(`Craps : Pass Line — gain de ${bet} jetons.`);
+          recordRound('win', bet, bet);
+        } else if (total === 2 || total === 3 || total === 12) {
+          showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Craps, vous perdez ${bet} jetons.`, 'error');
+          addHistory(`Craps : Pass Line — perte de ${bet} jetons.`);
+          recordRound('lose', bet, 0);
+        } else {
+          showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Point établi : continuez jusqu'à obtenir ${total} avant un 7.`, 'info');
+          addHistory(`Craps : point ${total} établi.`);
+        }
+      } else {
+        if (total === 2 || total === 3) {
+          state.balance += bet * 2;
+          showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Don't Pass gagnant : +${bet} jetons.`, 'success');
+          addHistory(`Craps : Don't Pass — gain de ${bet} jetons.`);
+          recordRound('win', bet, bet);
+        } else if (total === 12) {
+          state.balance += bet;
+          showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Bar 12, mise remboursée.`, 'info');
+          addHistory(`Craps : Don't Pass — mise remboursée.`);
+        } else if (total === 7 || total === 11) {
+          showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Don't Pass perdu : -${bet} jetons.`, 'error');
+          addHistory(`Craps : Don't Pass — perte de ${bet} jetons.`);
+          recordRound('lose', bet, 0);
+        } else {
+          showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Le point est ${total}, continuez jusqu'à obtenir un 7.`, 'info');
+          addHistory(`Craps : point ${total} établi.`);
+        }
+      }
+
       updateBalance();
-      return;
-    }
-
-    if (type === 'pass') {
-      if (total === 7 || total === 11) {
-        state.balance += bet * 2;
-        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Pass Line gagnant : +${bet} jetons.`, 'success');
-        addHistory(`Craps : Pass Line — gain de ${bet} jetons.`);
-        recordRound('win', bet, bet);
-      } else if (total === 2 || total === 3 || total === 12) {
-        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Craps, vous perdez ${bet} jetons.`, 'error');
-        addHistory(`Craps : Pass Line — perte de ${bet} jetons.`);
-        recordRound('lose', bet, 0);
-      } else {
-        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Point établi : continuez jusqu'à obtenir ${total} avant un 7.`, 'info');
-        addHistory(`Craps : point ${total} établi.`);
-      }
-    } else {
-      if (total === 2 || total === 3) {
-        state.balance += bet * 2;
-        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Don't Pass gagnant : +${bet} jetons.`, 'success');
-        addHistory(`Craps : Don't Pass — gain de ${bet} jetons.`);
-        recordRound('win', bet, bet);
-      } else if (total === 12) {
-        state.balance += bet;
-        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Bar 12, mise remboursée.`, 'info');
-        addHistory(`Craps : Don't Pass — mise remboursée.`);
-      } else if (total === 7 || total === 11) {
-        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Don't Pass perdu : -${bet} jetons.`, 'error');
-        addHistory(`Craps : Don't Pass — perte de ${bet} jetons.`);
-        recordRound('lose', bet, 0);
-      } else {
-        showResult('crapsResult', `Dés : ${d1} + ${d2} = ${total}. Le point est ${total}, continuez jusqu'à obtenir un 7.`, 'info');
-        addHistory(`Craps : point ${total} établi.`);
-      }
-    }
-
-    updateBalance();
+    }, 800);
   });
 }
 
@@ -419,6 +445,7 @@ function renderSlots() {
   `;
 
   document.getElementById('slotsStart').addEventListener('click', () => {
+    const reels = document.querySelectorAll('.slot-reel');
     const bet = Number(document.getElementById('slotsBet').value || 0);
     if (!Number.isFinite(bet) || bet < 10 || bet > state.balance) {
       showResult('slotsResult', 'Mise invalide : minimum 10 jetons.', 'error');
@@ -426,31 +453,47 @@ function renderSlots() {
     }
 
     const symbols = ['🍒', '🍋', '🍊', '🍇', '⭐', '7'];
-    const r1 = symbols[Math.floor(Math.random() * symbols.length)];
-    const r2 = symbols[Math.floor(Math.random() * symbols.length)];
-    const r3 = symbols[Math.floor(Math.random() * symbols.length)];
     const payout = { '🍒': 2, '🍋': 3, '🍊': 4, '🍇': 5, '⭐': 8, '7': 10 };
 
-    state.balance -= bet;
-    if (r1 === r2 && r2 === r3) {
+    reels.forEach((reel) => {
+      reel.classList.add('spin');
+      reel.classList.remove('win');
+    });
+    showResult('slotsResult', 'Les rouleaux tournent…', 'info');
+
+    setTimeout(() => {
+      const r1 = symbols[Math.floor(Math.random() * symbols.length)];
+      const r2 = symbols[Math.floor(Math.random() * symbols.length)];
+      const r3 = symbols[Math.floor(Math.random() * symbols.length)];
+      reels[0].textContent = r1;
+      reels[1].textContent = r2;
+      reels[2].textContent = r3;
+      reels.forEach((reel) => {
+        reel.classList.remove('spin');
+      });
+
+      state.balance -= bet;
+      if (r1 === r2 && r2 === r3) {
       const coeff = payout[r1] || 1;
       const gain = bet * coeff;
       state.balance += bet + gain;
-      showResult('slotsResult', `Jackpot ! ${r1} ${r2} ${r3} — vous remportez ${gain} jetons (×${coeff}).`, 'success');
-      addHistory(`Slots : jackpot ${r1}${r2}${r3} (+${gain}).`);
-      recordRound('win', bet, gain);
-    } else if (r1 === r2 || r2 === r3 || r1 === r3) {
-      const gain = Math.floor(bet * 1.5);
-      state.balance += bet + gain;
-      showResult('slotsResult', `Deux symboles identiques : ${r1} ${r2} ${r3}. Vous gagnez ${gain} jetons.`, 'info');
-      addHistory(`Slots : 2 identiques ${r1}${r2}${r3} (+${gain}).`);
-      recordRound('win', bet, gain);
-    } else {
-      showResult('slotsResult', `Aucun alignement : ${r1} ${r2} ${r3}. Vous perdez ${bet} jetons.`, 'error');
-      addHistory(`Slots : échec ${r1}${r2}${r3} (-${bet}).`);
-      recordRound('lose', bet, 0);
-    }
-    updateBalance();
+        reels.forEach((reel) => reel.classList.add('win'));
+        showResult('slotsResult', `Jackpot ! ${r1} ${r2} ${r3} — vous remportez ${gain} jetons (×${coeff}).`, 'success');
+        addHistory(`Slots : jackpot ${r1}${r2}${r3} (+${gain}).`);
+        recordRound('win', bet, gain);
+      } else if (r1 === r2 || r2 === r3 || r1 === r3) {
+        const gain = Math.floor(bet * 1.5);
+        state.balance += bet + gain;
+        showResult('slotsResult', `Deux symboles identiques : ${r1} ${r2} ${r3}. Vous gagnez ${gain} jetons.`, 'info');
+        addHistory(`Slots : 2 identiques ${r1}${r2}${r3} (+${gain}).`);
+        recordRound('win', bet, gain);
+      } else {
+        showResult('slotsResult', `Aucun alignement : ${r1} ${r2} ${r3}. Vous perdez ${bet} jetons.`, 'error');
+        addHistory(`Slots : échec ${r1}${r2}${r3} (-${bet}).`);
+        recordRound('lose', bet, 0);
+      }
+      updateBalance();
+    }, 1500);
   });
 }
 
