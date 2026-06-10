@@ -245,6 +245,25 @@ a { text-decoration: none; }
   font-size: 0.95rem;
 }
 
+.chip-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.chip-strip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
 .page-grid {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
@@ -404,7 +423,13 @@ a { text-decoration: none; }
 }
 
 .slot-reel.spin {
-  animation: reelSpin 0.6s linear infinite;
+  animation: reelSpin 0.62s linear infinite;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 0 0 1px rgba(73, 211, 255, 0.08);
+}
+
+.slot-reel.win {
+  background: linear-gradient(180deg, rgba(126, 240, 176, 0.12), rgba(255,255,255,0.04));
+  border-color: rgba(126, 240, 176, 0.35);
 }
 
 @keyframes reelSpin {
@@ -463,6 +488,14 @@ a { text-decoration: none; }
 .result-box.success { border-color: rgba(126, 240, 176, 0.25); }
 .result-box.error { border-color: rgba(255, 138, 138, 0.25); }
 .result-box.info { border-color: rgba(73, 211, 255, 0.18); }
+.result-box.success { animation: pulseGlow 0.45s ease; }
+.result-box.error { animation: pulseGlow 0.45s ease; }
+
+@keyframes pulseGlow {
+  0% { transform: translateY(0); box-shadow: 0 0 0 rgba(73, 211, 255, 0); }
+  50% { transform: translateY(-1px); box-shadow: 0 0 18px rgba(73, 211, 255, 0.12); }
+  100% { transform: translateY(0); box-shadow: 0 0 0 rgba(73, 211, 255, 0); }
+}
 
 .badge-row {
   display: flex;
