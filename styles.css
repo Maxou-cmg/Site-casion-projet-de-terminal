@@ -8,6 +8,7 @@
   --accent: #8b7bff;
   --accent-2: #49d3ff;
   --success: #7ef0b0;
+  --danger: #ff8a8a;
 }
 
 * { box-sizing: border-box; }
@@ -23,12 +24,14 @@ body {
     linear-gradient(180deg, #050814 0%, #080d18 45%, #060b14 100%);
 }
 
+button, input, select { font: inherit; }
+
 img { max-width: 100%; }
 
 a { text-decoration: none; }
 
 .container {
-  width: min(1160px, calc(100% - 24px));
+  width: min(1180px, calc(100% - 24px));
   margin: 0 auto;
 }
 
@@ -51,6 +54,15 @@ a { text-decoration: none; }
   text-transform: uppercase;
 }
 
+.badge {
+  border: 1px solid rgba(73, 211, 255, 0.25);
+  border-radius: 999px;
+  background: rgba(73, 211, 255, 0.08);
+  color: var(--accent-2);
+  font-size: 0.85rem;
+  padding: 8px 10px;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -58,6 +70,8 @@ a { text-decoration: none; }
   border-radius: 999px;
   padding: 10px 16px;
   font-weight: 700;
+  border: none;
+  cursor: pointer;
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
@@ -89,12 +103,12 @@ a { text-decoration: none; }
 }
 
 .hero h1 {
-  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
   line-height: 1.05;
   margin: 10px 0 14px;
 }
 
-.lede, .section-heading p, .publication-panel p, .card p, .footer p {
+.lede, .muted, .panel-heading p, .info-card p, .footer p {
   color: var(--muted);
   line-height: 1.6;
 }
@@ -124,12 +138,16 @@ a { text-decoration: none; }
 }
 
 .hero-card,
-.card,
-.publication-panel {
+.panel,
+.info-card,
+.status-card,
+.game-card,
+.game-box,
+.result-box {
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 24px;
   background: linear-gradient(180deg, rgba(18, 26, 46, 0.98), rgba(12, 18, 30, 0.98));
-  box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
 }
 
 .hero-card {
@@ -137,80 +155,181 @@ a { text-decoration: none; }
   align-self: center;
 }
 
-.mini-label {
-  color: var(--accent-2);
-  text-transform: uppercase;
-  letter-spacing: 0.25em;
-  font-size: 0.75rem;
+.balance-chip {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-top: 6px;
+  display: inline-block;
 }
 
-.hero-card h2 { margin: 4px 0 8px; font-size: 1.5rem; }
-
-.stat-grid {
+.mini-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 18px;
 }
 
-.stat-grid article {
+.mini-grid article {
   padding: 12px;
   border-radius: 18px;
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.08);
 }
 
-.stat-grid strong {
+.mini-grid strong {
   display: block;
   font-size: 1.35rem;
   color: var(--success);
 }
 
-.stat-grid span {
+.mini-grid span {
   color: var(--muted);
   font-size: 0.95rem;
 }
 
-.section { padding: 38px 0 18px; }
-
-.section-heading h2 {
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  margin: 8px 0 8px;
-}
-
-.cards-grid {
+.page-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-top: 18px;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 18px;
+  padding: 24px 0 44px;
 }
 
-.card { padding: 16px; }
+.panel { padding: 16px; }
 
-.card h3 { margin-top: 0; margin-bottom: 8px; }
-
-.publication-panel {
-  padding: 18px;
-  margin-bottom: 40px;
+.panel-heading h2 {
+  font-size: clamp(1.35rem, 4vw, 1.9rem);
+  margin: 8px 0 4px;
 }
 
-.steps-list {
-  padding-left: 18px;
+.game-list { display: grid; gap: 10px; margin-top: 14px; }
+
+.game-card {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  padding: 12px;
   color: var(--text);
-  line-height: 1.6;
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
 }
 
-.note-box {
+.game-card.active, .game-card:hover {
+  border-color: rgba(73, 211, 255, 0.35);
+  background: linear-gradient(135deg, rgba(73, 211, 255, 0.08), rgba(139, 123, 255, 0.08));
+}
+
+.game-icon { font-size: 1.15rem; }
+
+.game-card small { color: var(--muted); }
+
+.info-card, .status-card {
+  padding: 12px;
   margin-top: 14px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(73, 211, 255, 0.08);
-  border: 1px solid rgba(73, 211, 255, 0.18);
+}
+
+.status-card h3, .info-card h3 { margin-top: 2px; margin-bottom: 8px; }
+
+.game-shell { display: grid; gap: 12px; }
+
+.game-box {
+  padding: 14px;
+}
+
+.game-box h3 { margin-top: 0; margin-bottom: 8px; }
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: end;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+}
+
+.field label { color: var(--muted); font-size: 0.92rem; }
+
+.field input, .field select {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
   color: var(--text);
 }
 
-.footer {
-  padding: 0 0 28px;
+.inline-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.result-box {
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+}
+
+.result-box.success { border-color: rgba(126, 240, 176, 0.25); }
+.result-box.error { border-color: rgba(255, 138, 138, 0.25); }
+.result-box.info { border-color: rgba(73, 211, 255, 0.18); }
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.badge-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.hand-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.card-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+  background: rgba(139, 123, 255, 0.12);
+  border: 1px solid rgba(139, 123, 255, 0.25);
+  padding: 8px;
+  font-weight: 700;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.history-list li {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.footer { padding: 0 0 28px; }
+
+@media (max-width: 1040px) {
+  .page-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 920px) {
@@ -219,7 +338,7 @@ a { text-decoration: none; }
 
 @media (max-width: 640px) {
   .hero { padding: 30px 0 48px; }
-  .cards-grid { grid-template-columns: 1fr; }
-  .topbar { flex-wrap: wrap; gap: 10px; }
   .hero-actions { flex-wrap: wrap; }
+  .mini-grid { grid-template-columns: 1fr; }
+  .form-row { flex-direction: column; align-items: stretch; }
 }
